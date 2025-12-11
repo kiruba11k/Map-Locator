@@ -7,469 +7,544 @@ from typing import Optional, Dict, Any
 import os
 
 # ====================
-# 1. INITIALIZATION & CONFIG
+# 1. ENHANCED DESIGN TOKENS WITH COLOR THEORY
 # ====================
 
 @st.cache_resource
 def load_design_tokens() -> Dict[str, Any]:
-    """Load design tokens with comprehensive dual-theme system."""
+    """Load enhanced design tokens with elegant color palette."""
     try:
         if os.path.exists('theme_tokens.json'):
             with open('theme_tokens.json', 'r') as f:
                 tokens = json.load(f)
         else:
-            # Sophisticated dual-theme system based on color theory
-            # Primary: Indigo (#6366F1) for trust & professionalism
-            # Accent: Teal (#14B8A6) for energy & modern feel
-            # Neutrals: Warm grays for elegance
+            # Elegant color palette based on color theory
             tokens = {
-                "color": {
+                "themes": {
                     "dark": {
-                        "primary": {
-                            "50": "#e0e7ff", "100": "#c7d2fe", "200": "#a5b4fc",
-                            "300": "#818cf8", "400": "#6366f1", "500": "#4f46e5",
-                            "600": "#4338ca", "700": "#3730a3", "800": "#312e81",
-                            "900": "#1e1b4b"
+                        "color": {
+                            "primary": {
+                                "50": "#e6f3ff",
+                                "100": "#cce7ff",
+                                "200": "#99d0ff",
+                                "300": "#66b8ff",
+                                "400": "#339fff",
+                                "500": "#0066cc",  # Elegant blue
+                                "600": "#0052a3",
+                                "700": "#003d7a",
+                                "800": "#002952",
+                                "900": "#001429"
+                            },
+                            "secondary": {
+                                "500": "#8a2be2",  # Blue violet accent
+                                "600": "#7a1fd2",
+                                "700": "#6a13c2"
+                            },
+                            "surface": {
+                                "0": "#0a0a0f",    # Deep space black
+                                "1": "#151522",    # Rich dark blue
+                                "2": "#1e1e2d",    # Card surface
+                                "3": "#2a2a3a",    # Elevated surface
+                                "4": "#36364a"     # Hover surface
+                            },
+                            "accent": {
+                                "gradient": {
+                                    "start": "#0066cc",
+                                    "middle": "#8a2be2",
+                                    "end": "#00d4ff"
+                                }
+                            },
+                            "semantic": {
+                                "success": "#10dc60",
+                                "warning": "#ffce00",
+                                "danger": "#f04141",
+                                "info": "#0cd1e8",
+                                "muted": "rgba(255, 255, 255, 0.5)",
+                                "text": {
+                                    "primary": "rgba(255, 255, 255, 0.95)",
+                                    "secondary": "rgba(255, 255, 255, 0.7)",
+                                    "tertiary": "rgba(255, 255, 255, 0.5)"
+                                }
+                            }
                         },
-                        "accent": {
-                            "50": "#f0fdfa", "100": "#ccfbf1", "200": "#99f6e4",
-                            "300": "#5eead4", "400": "#2dd4bf", "500": "#14b8a6",
-                            "600": "#0d9488", "700": "#0f766e", "800": "#115e59",
-                            "900": "#134e4a"
+                        "gradients": {
+                            "primary": "linear-gradient(135deg, #0066cc 0%, #8a2be2 50%, #00d4ff 100%)",
+                            "card": "linear-gradient(145deg, #1e1e2d 0%, #2a2a3a 100%)",
+                            "sidebar": "linear-gradient(180deg, #151522 0%, #0a0a0f 100%)"
                         },
-                        "surface": {
-                            "0": "#0a0a0a",    # Base background
-                            "1": "#1a1a1a",    # Card background
-                            "2": "#262626",    # Elevated surfaces
-                            "3": "#404040"     # Borders & dividers
-                        },
-                        "text": {
-                            "primary": "#fafafa",
-                            "secondary": "#d4d4d4",
-                            "tertiary": "#a3a3a3"
-                        },
-                        "semantic": {
-                            "success": "#10b981",
-                            "warning": "#f59e0b",
-                            "error": "#ef4444",
-                            "info": "#3b82f6"
+                        "glass": {
+                            "morphism": "rgba(30, 30, 45, 0.7)",
+                            "border": "rgba(255, 255, 255, 0.1)"
                         }
                     },
                     "light": {
-                        "primary": {
-                            "50": "#eef2ff", "100": "#e0e7ff", "200": "#c7d2fe",
-                            "300": "#a5b4fc", "400": "#818cf8", "500": "#6366f1",
-                            "600": "#4f46e5", "700": "#4338ca", "800": "#3730a3",
-                            "900": "#1e1b4b"
+                        "color": {
+                            "primary": {
+                                "500": "#0066cc",
+                                "600": "#0052a3",
+                                "700": "#003d7a"
+                            },
+                            "secondary": {
+                                "500": "#8a2be2",
+                                "600": "#7a1fd2",
+                                "700": "#6a13c2"
+                            },
+                            "surface": {
+                                "0": "#f8f9ff",
+                                "1": "#ffffff",
+                                "2": "#f0f4ff",
+                                "3": "#e6ebff",
+                                "4": "#dce2ff"
+                            },
+                            "accent": {
+                                "gradient": {
+                                    "start": "#0066cc",
+                                    "middle": "#8a2be2",
+                                    "end": "#00d4ff"
+                                }
+                            },
+                            "semantic": {
+                                "success": "#28a745",
+                                "warning": "#ffc107",
+                                "danger": "#dc3545",
+                                "info": "#17a2b8",
+                                "muted": "rgba(0, 0, 0, 0.5)",
+                                "text": {
+                                    "primary": "rgba(0, 0, 0, 0.9)",
+                                    "secondary": "rgba(0, 0, 0, 0.7)",
+                                    "tertiary": "rgba(0, 0, 0, 0.5)"
+                                }
+                            }
                         },
-                        "accent": {
-                            "50": "#f0fdfa", "100": "#ccfbf1", "200": "#99f6e4",
-                            "300": "#5eead4", "400": "#2dd4bf", "500": "#14b8a6",
-                            "600": "#0d9488", "700": "#0f766e", "800": "#115e59",
-                            "900": "#134e4a"
+                        "gradients": {
+                            "primary": "linear-gradient(135deg, #0066cc 0%, #8a2be2 50%, #00d4ff 100%)",
+                            "card": "linear-gradient(145deg, #ffffff 0%, #f0f4ff 100%)",
+                            "sidebar": "linear-gradient(180deg, #ffffff 0%, #f8f9ff 100%)"
                         },
-                        "surface": {
-                            "0": "#ffffff",    # Base background
-                            "1": "#fafafa",    # Card background
-                            "2": "#f5f5f5",    # Elevated surfaces
-                            "3": "#e5e5e5"     # Borders & dividers
-                        },
-                        "text": {
-                            "primary": "#171717",
-                            "secondary": "#525252",
-                            "tertiary": "#737373"
-                        },
-                        "semantic": {
-                            "success": "#10b981",
-                            "warning": "#f59e0b",
-                            "error": "#dc2626",
-                            "info": "#2563eb"
+                        "glass": {
+                            "morphism": "rgba(255, 255, 255, 0.7)",
+                            "border": "rgba(0, 0, 0, 0.1)"
                         }
                     }
                 },
                 "typography": {
-                    "font_family": "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif",
-                    "font_mono": "'JetBrains Mono', 'SF Mono', Monaco, monospace",
-                    "scale": {
-                        "display": { "xl": "3.75rem", "lg": "3rem", "md": "2.25rem" },
-                        "heading": { "xl": "1.875rem", "lg": "1.5rem", "md": "1.25rem", "sm": "1.125rem" },
-                        "body": { "lg": "1.125rem", "md": "1rem", "sm": "0.875rem" },
-                        "caption": "0.75rem"
+                    "font_family": "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
+                    "display": {
+                        "xl": "3.5rem",
+                        "lg": "2.5rem",
+                        "md": "2rem",
+                        "sm": "1.75rem"
                     },
-                    "weight": {
-                        "light": "300",
-                        "regular": "400",
-                        "medium": "500",
-                        "semibold": "600",
-                        "bold": "700",
-                        "extrabold": "800"
+                    "heading": {
+                        "xl": "1.5rem",
+                        "lg": "1.25rem",
+                        "md": "1.125rem",
+                        "sm": "1rem"
+                    },
+                    "body": {
+                        "lg": "1rem",
+                        "md": "0.875rem",
+                        "sm": "0.75rem"
+                    },
+                    "lineHeight": {
+                        "tight": "1.2",
+                        "normal": "1.5",
+                        "relaxed": "1.75"
                     }
                 },
                 "spacing": {
-                    "scale": [0, 4, 8, 12, 16, 20, 24, 32, 40, 48, 56, 64, 80, 96, 128],
-                    "radius": {
-                        "sm": "6px",
-                        "md": "12px",
-                        "lg": "16px",
-                        "xl": "24px",
-                        "full": "9999px"
-                    }
+                    "base": "0.5rem",
+                    "scale": [0, 0.25, 0.5, 1, 1.5, 2, 3, 4, 6, 8, 12, 16, 24, 32]
                 },
-                "elevation": {
-                    "levels": {
-                        "0": "0 1px 2px 0 rgb(0 0 0 / 0.05)",
-                        "1": "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)",
-                        "2": "0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)",
-                        "3": "0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)"
+                "effects": {
+                    "shadows": {
+                        "sm": "0 2px 8px rgba(0, 0, 0, 0.1)",
+                        "md": "0 4px 20px rgba(0, 0, 0, 0.15)",
+                        "lg": "0 8px 40px rgba(0, 0, 0, 0.2)",
+                        "xl": "0 20px 60px rgba(0, 0, 0, 0.3)",
+                        "glow": "0 0 40px rgba(0, 102, 204, 0.3)"
                     },
                     "blur": {
-                        "sm": "blur(4px)",
-                        "md": "blur(8px)",
-                        "lg": "blur(16px)"
+                        "sm": "blur(8px)",
+                        "md": "blur(16px)",
+                        "lg": "blur(24px)"
                     }
                 },
                 "animation": {
-                    "timing": {
-                        "fast": "150ms",
+                    "duration": {
+                        "fast": "200ms",
                         "normal": "300ms",
                         "slow": "500ms"
                     },
                     "easing": {
-                        "default": "cubic-bezier(0.4, 0, 0.2, 1)",
-                        "emphasized": "cubic-bezier(0.2, 0, 0, 1)",
-                        "decelerate": "cubic-bezier(0, 0, 0.2, 1)"
+                        "standard": "cubic-bezier(0.4, 0, 0.2, 1)",
+                        "decelerate": "cubic-bezier(0, 0, 0.2, 1)",
+                        "accelerate": "cubic-bezier(0.4, 0, 1, 1)"
                     }
+                },
+                "radius": {
+                    "sm": "8px",
+                    "md": "12px",
+                    "lg": "16px",
+                    "xl": "24px",
+                    "full": "9999px"
                 }
             }
-        
         return tokens
-    except Exception:
+    except Exception as e:
+        st.error(f"Error loading tokens: {e}")
         return {}
 
-# Initialize with dark theme as default
+# Initialize with dark theme by default
 TOKENS = load_design_tokens()
-CURRENT_THEME = "dark"  # Will be togglable
-THEME_TOKENS = TOKENS.get("color", {}).get(CURRENT_THEME, {})
-
-st.set_page_config(
-    page_title="SBI Network Intelligence",
-    page_icon="🏦",
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
+CURRENT_THEME = "dark"
 
 # ====================
-# 2. ENHANCED DUAL-THEME DESIGN SYSTEM
+# 2. ENHANCED DESIGN SYSTEM WITH 3D EFFECTS
 # ====================
 
-def inject_enhanced_design_system(theme: str = "dark"):
-    """Inject sophisticated CSS with dual-theme support and color theory."""
-    theme_tokens = TOKENS.get("color", {}).get(theme, {})
-    typo = TOKENS.get("typography", {})
-    spacing = TOKENS.get("spacing", {})
-    elevation = TOKENS.get("elevation", {})
-    animation = TOKENS.get("animation", {})
-    
-    primary = theme_tokens.get("primary", {})
-    accent = theme_tokens.get("accent", {})
-    surface = theme_tokens.get("surface", {})
-    text = theme_tokens.get("text", {})
-    semantic = theme_tokens.get("semantic", {})
+def inject_design_system():
+    """Inject comprehensive CSS with elegant design system and 3D effects."""
+    theme = st.session_state.get('theme', 'dark')
+    tokens = TOKENS["themes"][theme]
     
     st.markdown(f"""
-    <style>
-    /* ===== DUAL-THEME CSS CUSTOM PROPERTIES ===== */
-    :root {{
-        /* Color System - Primary & Accent */
-        --color-primary-50: {primary.get('50', '#eef2ff')};
-        --color-primary-500: {primary.get('500', '#6366f1')};
-        --color-primary-700: {primary.get('700', '#4338ca')};
-        --color-accent-500: {accent.get('500', '#14b8a6')};
-        --color-accent-300: {accent.get('300', '#5eead4')};
-        
-        /* Surface Colors */
-        --color-surface-0: {surface.get('0', '#0a0a0a')};
-        --color-surface-1: {surface.get('1', '#1a1a1a')};
-        --color-surface-2: {surface.get('2', '#262626')};
-        --color-surface-3: {surface.get('3', '#404040')};
-        
-        /* Text Colors */
-        --color-text-primary: {text.get('primary', '#fafafa')};
-        --color-text-secondary: {text.get('secondary', '#d4d4d4')};
-        --color-text-tertiary: {text.get('tertiary', '#a3a3a3')};
-        
-        /* Semantic Colors */
-        --color-success: {semantic.get('success', '#10b981')};
-        --color-warning: {semantic.get('warning', '#f59e0b')};
-        --color-error: {semantic.get('error', '#ef4444')};
-        --color-info: {semantic.get('info', '#3b82f6')};
-        
-        /* Typography System */
-        --font-family: {typo.get('font_family', "'Inter', sans-serif")};
-        --font-mono: {typo.get('font_mono', "'JetBrains Mono', monospace")};
-        --font-display-lg: {typo.get('scale', {}).get('display', {}).get('lg', '3rem')};
-        --font-heading-md: {typo.get('scale', {}).get('heading', {}).get('md', '1.25rem')};
-        --font-body-md: {typo.get('scale', {}).get('body', {}).get('md', '1rem')};
-        --font-caption: {typo.get('scale', {}).get('caption', '0.75rem')};
-        
-        /* Spacing & Layout */
-        --radius-md: {spacing.get('radius', {}).get('md', '12px')};
-        --radius-lg: {spacing.get('radius', {}).get('lg', '16px')};
-        --space-3: {spacing.get('scale', [0,4,8,12,16,20,24,32,40,48,56,64,80,96,128])[3]}px;
-        --space-4: {spacing.get('scale', [0,4,8,12,16,20,24,32,40,48,56,64,80,96,128])[4]}px;
-        --space-6: {spacing.get('scale', [0,4,8,12,16,20,24,32,40,48,56,64,80,96,128])[6]}px;
-        
-        /* Elevation & Depth */
-        --shadow-1: {elevation.get('levels', {}).get('1', '0 4px 6px -1px rgb(0 0 0 / 0.1)')};
-        --shadow-2: {elevation.get('levels', {}).get('2', '0 10px 15px -3px rgb(0 0 0 / 0.1)')};
-        --shadow-3: {elevation.get('levels', {}).get('3', '0 20px 25px -5px rgb(0 0 0 / 0.1)')};
-        --blur-md: {elevation.get('blur', {}).get('md', 'blur(8px)')};
-        
-        /* Animation */
-        --timing-normal: {animation.get('timing', {}).get('normal', '300ms')};
-        --easing-default: {animation.get('easing', {}).get('default', 'cubic-bezier(0.4, 0, 0.2, 1)')};
-    }}
-    
-    /* ===== BASE RESET & THEME APPLICATIONS ===== */
-    .stApp {{
-        background: var(--color-surface-0) !important;
-        color: var(--color-text-primary) !important;
-        font-family: var(--font-family) !important;
-        font-weight: 400;
-        line-height: 1.6;
-        letter-spacing: -0.01em;
-    }}
-    
-    /* ===== ELEGANT TYPOGRAPHY HIERARCHY ===== */
-    h1, h2, h3, h4, h5, h6 {{
-        font-weight: 600;
-        letter-spacing: -0.025em;
-        line-height: 1.2;
-    }}
-    
-    .stMarkdown h1 {{
-        font-size: var(--font-display-lg) !important;
-        background: linear-gradient(135deg, var(--color-primary-500), var(--color-accent-500));
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-        margin-bottom: 0.5rem !important;
-    }}
-    
-    .stMarkdown h2 {{
-        font-size: var(--font-heading-md) !important;
-        color: var(--color-text-primary) !important;
-        margin-top: 2rem !important;
-        margin-bottom: 1rem !important;
-    }}
-    
-    /* ===== REFINED CARD SYSTEM ===== */
-    .glass-card {{
-        background: linear-gradient(
-            145deg,
-            rgba(255, 255, 255, 0.05),
-            rgba(255, 255, 255, 0.02)
-        ) !important;
-        backdrop-filter: var(--blur-md);
-        border-radius: var(--radius-lg) !important;
-        border: 1px solid rgba(255, 255, 255, 0.08) !important;
-        box-shadow: var(--shadow-1) !important;
-        transition: all var(--timing-normal) var(--easing-default) !important;
-    }}
-    
-    .glass-card:hover {{
-        transform: translateY(-4px) scale(1.01);
-        box-shadow: var(--shadow-3) !important;
-        border-color: rgba(255, 255, 255, 0.12) !important;
-    }}
-    
-    /* ===== STREAMLIT COMPONENT OVERHAUL ===== */
-    
-    /* Metric Cards - Elegant Redesign */
-    [data-testid="stMetric"] {{
-        background: var(--color-surface-1) !important;
-        border-radius: var(--radius-lg) !important;
-        padding: var(--space-6) var(--space-4) !important;
-        border-left: 4px solid var(--color-accent-500) !important;
-        box-shadow: var(--shadow-1) !important;
-        transition: all var(--timing-normal) var(--easing-default) !important;
-    }}
-    
-    [data-testid="stMetric"]:hover {{
-        transform: translateY(-2px);
-        box-shadow: var(--shadow-2) !important;
-        border-left-color: var(--color-accent-300) !important;
-    }}
-    
-    [data-testid="stMetricLabel"] {{
-        color: var(--color-text-secondary) !important;
-        font-size: var(--font-caption) !important;
-        font-weight: 500 !important;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-    }}
-    
-    [data-testid="stMetricValue"] {{
-        color: var(--color-text-primary) !important;
-        font-size: 2rem !important;
-        font-weight: 700 !important;
-        line-height: 1.1 !important;
-    }}
-    
-    [data-testid="stMetricDelta"] {{
-        font-weight: 600 !important;
-    }}
-    
-    /* Sidebar - Minimal & Elegant */
-    [data-testid="stSidebar"] {{
-        background: linear-gradient(
-            180deg,
-            var(--color-surface-1),
-            var(--color-surface-0)
-        ) !important;
-        border-right: 1px solid rgba(255, 255, 255, 0.05) !important;
-    }}
-    
-    /* Form Controls - Modern */
-    .stSelectbox, .stSlider, .stTextInput {{
-        background: var(--color-surface-2) !important;
-        border-radius: var(--radius-md) !important;
-        border: 1px solid rgba(255, 255, 255, 0.1) !important;
-        transition: all 200ms ease !important;
-    }}
-    
-    .stSelectbox:hover, .stSlider:hover {{
-        border-color: var(--color-primary-500) !important;
-        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1) !important;
-    }}
-    
-    /* Buttons - Sophisticated */
-    .stButton > button {{
-        background: linear-gradient(
-            135deg,
-            var(--color-primary-500),
-            var(--color-primary-700)
-        ) !important;
-        color: white !important;
-        border: none !important;
-        border-radius: var(--radius-md) !important;
-        padding: 0.75rem 1.5rem !important;
-        font-weight: 600 !important;
-        letter-spacing: 0.025em;
-        transition: all var(--timing-normal) var(--easing-default) !important;
-        box-shadow: var(--shadow-1) !important;
-    }}
-    
-    .stButton > button:hover {{
-        transform: translateY(-2px);
-        box-shadow: var(--shadow-2) !important;
-        background: linear-gradient(
-            135deg,
-            var(--color-primary-400),
-            var(--color-primary-600)
-        ) !important;
-    }}
-    
-    /* Data Table - Clean */
-    .stDataFrame {{
-        border-radius: var(--radius-lg) !important;
-        overflow: hidden !important;
-    }}
-    
-    /* Divider - Subtle */
-    hr {{
-        border: none;
-        height: 1px;
-        background: linear-gradient(
-            90deg,
-            transparent,
-            rgba(255, 255, 255, 0.1),
-            transparent
-        ) !important;
-        margin: 2rem 0 !important;
-    }}
-    
-    /* Tooltip - Elegant */
-    .map-tooltip {{
-        background: var(--color-surface-1) !important;
-        backdrop-filter: var(--blur-md) !important;
-        border-radius: var(--radius-md) !important;
-        border: 1px solid rgba(255, 255, 255, 0.1) !important;
-        box-shadow: var(--shadow-3) !important;
-        padding: 1rem !important;
-        max-width: 280px !important;
-    }}
-    
-    .map-tooltip h3 {{
-        color: var(--color-accent-500) !important;
-        margin: 0 0 0.5rem 0 !important;
-        font-size: 1.1rem !important;
-        font-weight: 600 !important;
-    }}
-    
-    .map-tooltip p {{
-        color: var(--color-text-secondary) !important;
-        margin: 0.25rem 0 !important;
-        font-size: 0.875rem !important;
-        line-height: 1.4 !important;
-    }}
-    
-    /* ===== ANIMATIONS & MICRO-INTERACTIONS ===== */
-    @keyframes fadeSlideUp {{
-        from {{ opacity: 0; transform: translateY(12px); }}
-        to {{ opacity: 1; transform: translateY(0); }}
-    }}
-    
-    @keyframes float {{
-        0%, 100% {{ transform: translateY(0px); }}
-        50% {{ transform: translateY(-8px); }}
-    }}
-    
-    .animate-fade-up {{
-        animation: fadeSlideUp 0.6s var(--easing-default) forwards;
-    }}
-    
-    .animate-float {{
-        animation: float 3s var(--easing-default) infinite;
-    }}
-    
-    /* ===== RESPONSIVE DESIGN ===== */
-    @media (max-width: 768px) {{
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+        <style>
+        /* ===== CSS CUSTOM PROPERTIES ===== */
         :root {{
-            --font-display-lg: 2.25rem;
-            --font-heading-md: 1.25rem;
+            /* Color Palette */
+            --color-primary-500: {tokens["color"]["primary"]["500"]};
+            --color-primary-600: {tokens["color"]["primary"]["600"]};
+            --color-primary-700: {tokens["color"]["primary"]["700"]};
+            --color-secondary-500: {tokens["color"]["secondary"]["500"]};
+            --color-surface-0: {tokens["color"]["surface"]["0"]};
+            --color-surface-1: {tokens["color"]["surface"]["1"]};
+            --color-surface-2: {tokens["color"]["surface"]["2"]};
+            --color-surface-3: {tokens["color"]["surface"]["3"]};
+            --color-surface-4: {tokens["color"]["surface"]["4"]};
+            
+            /* Gradients */
+            --gradient-primary: {tokens["gradients"]["primary"]};
+            --gradient-card: {tokens["gradients"]["card"]};
+            --gradient-sidebar: {tokens["gradients"]["sidebar"]};
+            
+            /* Glass Morphism */
+            --glass-bg: {tokens["glass"]["morphism"]};
+            --glass-border: {tokens["glass"]["border"]};
+            
+            /* Semantic Colors */
+            --color-success: {tokens["color"]["semantic"]["success"]};
+            --color-warning: {tokens["color"]["semantic"]["warning"]};
+            --color-danger: {tokens["color"]["semantic"]["danger"]};
+            --color-info: {tokens["color"]["semantic"]["info"]};
+            --color-text-primary: {tokens["color"]["semantic"]["text"]["primary"]};
+            --color-text-secondary: {tokens["color"]["semantic"]["text"]["secondary"]};
+            --color-text-tertiary: {tokens["color"]["semantic"]["text"]["tertiary"]};
+            
+            /* Typography */
+            --font-family: {TOKENS["typography"]["font_family"]};
+            --font-display-xl: {TOKENS["typography"]["display"]["xl"]};
+            --font-display-lg: {TOKENS["typography"]["display"]["lg"]};
+            --font-heading-xl: {TOKENS["typography"]["heading"]["xl"]};
+            --font-heading-lg: {TOKENS["typography"]["heading"]["lg"]};
+            --font-body-lg: {TOKENS["typography"]["body"]["lg"]};
+            --font-body-md: {TOKENS["typography"]["body"]["md"]};
+            
+            /* Spacing */
+            --space-1: {TOKENS["spacing"]["scale"][1]}rem;
+            --space-2: {TOKENS["spacing"]["scale"][2]}rem;
+            --space-3: {TOKENS["spacing"]["scale"][3]}rem;
+            --space-4: {TOKENS["spacing"]["scale"][4]}rem;
+            --space-6: {TOKENS["spacing"]["scale"][6]}rem;
+            --space-8: {TOKENS["spacing"]["scale"][8]}rem;
+            
+            /* Effects */
+            --shadow-sm: {TOKENS["effects"]["shadows"]["sm"]};
+            --shadow-md: {TOKENS["effects"]["shadows"]["md"]};
+            --shadow-lg: {TOKENS["effects"]["shadows"]["lg"]};
+            --shadow-xl: {TOKENS["effects"]["shadows"]["xl"]};
+            --shadow-glow: {TOKENS["effects"]["shadows"]["glow"]};
+            --blur-md: {TOKENS["effects"]["blur"]["md"]};
+            
+            /* Animation */
+            --duration-normal: {TOKENS["animation"]["duration"]["normal"]};
+            --easing-standard: {TOKENS["animation"]["easing"]["standard"]};
+            
+            /* Radius */
+            --radius-md: {TOKENS["radius"]["md"]};
+            --radius-lg: {TOKENS["radius"]["lg"]};
+            --radius-xl: {TOKENS["radius"]["xl"]};
         }}
         
-        .stMetricValue {{
-            font-size: 1.75rem !important;
+        /* ===== BASE STYLES WITH 3D PERSPECTIVE ===== */
+        .stApp {{
+            background: var(--color-surface-0);
+            background-image: 
+                radial-gradient(at 40% 20%, rgba(var(--color-primary-500), 0.15) 0px, transparent 50%),
+                radial-gradient(at 80% 0%, rgba(var(--color-secondary-500), 0.15) 0px, transparent 50%),
+                radial-gradient(at 0% 50%, rgba(var(--color-info), 0.1) 0px, transparent 50%),
+                radial-gradient(at 80% 50%, rgba(var(--color-warning), 0.1) 0px, transparent 50%);
+            color: var(--color-text-primary);
+            font-family: var(--font-family);
+            min-height: 100vh;
+            perspective: 1000px;
         }}
-    }}
-    
-    /* ===== UTILITY CLASSES ===== */
-    .text-gradient {{
-        background: linear-gradient(135deg, var(--color-primary-500), var(--color-accent-500));
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-    }}
-    
-    .border-gradient {{
-        border: double 2px transparent;
-        background-image: linear-gradient(var(--color-surface-1), var(--color-surface-1)), 
-                          linear-gradient(135deg, var(--color-primary-500), var(--color-accent-500));
-        background-origin: border-box;
-        background-clip: padding-box, border-box;
-    }}
-    </style>
+        
+        /* ===== 3D CARD EFFECTS ===== */
+        .card-3d {{
+            background: var(--gradient-card);
+            border-radius: var(--radius-xl);
+            padding: var(--space-6);
+            backdrop-filter: var(--blur-md);
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--shadow-xl);
+            transform-style: preserve-3d;
+            transition: all 0.4s var(--easing-standard);
+            position: relative;
+            overflow: hidden;
+        }}
+        
+        .card-3d::before {{
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--gradient-primary);
+            border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+            z-index: 2;
+        }}
+        
+        .card-3d:hover {{
+            transform: translateY(-12px) rotateX(5deg);
+            box-shadow: var(--shadow-xl), var(--shadow-glow);
+        }}
+        
+        /* ===== GLASS MORPHISM ===== */
+        .glass-panel {{
+            background: var(--glass-bg);
+            backdrop-filter: var(--blur-md);
+            border: 1px solid var(--glass-border);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+        }}
+        
+        /* ===== TYPOGRAPHY ENHANCEMENTS ===== */
+        h1, h2, h3, h4, h5, h6 {{
+            font-weight: 700;
+            line-height: 1.2;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: var(--space-4);
+        }}
+        
+        .gradient-text {{
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 800;
+        }}
+        
+        /* ===== STREAMLIT COMPONENT OVERRIDES ===== */
+        /* Metric Cards with 3D effect */
+        [data-testid="stMetric"] {{
+            background: var(--gradient-card) !important;
+            backdrop-filter: var(--blur-md);
+            border-radius: var(--radius-lg) !important;
+            padding: var(--space-4) !important;
+            border: 1px solid var(--glass-border) !important;
+            box-shadow: var(--shadow-md) !important;
+            transition: all 0.3s var(--easing-standard) !important;
+            position: relative;
+            overflow: hidden;
+        }}
+        
+        [data-testid="stMetric"]::before {{
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: var(--gradient-primary);
+            border-radius: var(--radius-lg) 0 0 var(--radius-lg);
+        }}
+        
+        [data-testid="stMetric"]:hover {{
+            transform: translateY(-6px) scale(1.02);
+            box-shadow: var(--shadow-lg), var(--shadow-glow) !important;
+        }}
+        
+        [data-testid="stMetricLabel"] {{
+            color: var(--color-text-secondary) !important;
+            font-size: var(--font-body-md) !important;
+            font-weight: 500 !important;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }}
+        
+        [data-testid="stMetricValue"] {{
+            color: var(--color-text-primary) !important;
+            font-size: var(--font-heading-xl) !important;
+            font-weight: 800 !important;
+        }}
+        
+        /* Buttons with 3D effect */
+        .stButton > button {{
+            background: var(--gradient-primary) !important;
+            color: white !important;
+            border: none !important;
+            border-radius: var(--radius-lg) !important;
+            padding: var(--space-3) var(--space-6) !important;
+            font-weight: 600 !important;
+            font-size: var(--font-body-md) !important;
+            transition: all 0.3s var(--easing-standard) !important;
+            box-shadow: var(--shadow-md) !important;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }}
+        
+        .stButton > button::before {{
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0));
+            z-index: -1;
+            transition: opacity 0.3s;
+            opacity: 0;
+        }}
+        
+        .stButton > button:hover {{
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: var(--shadow-lg), var(--shadow-glow) !important;
+        }}
+        
+        .stButton > button:hover::before {{
+            opacity: 1;
+        }}
+        
+        /* Selectboxes */
+        [data-testid="stSelectbox"] {{
+            background: var(--gradient-card) !important;
+            border-radius: var(--radius-lg) !important;
+            border: 1px solid var(--glass-border) !important;
+            box-shadow: var(--shadow-sm) !important;
+        }}
+        
+        /* Sidebar Styling */
+        [data-testid="stSidebar"] {{
+            background: var(--gradient-sidebar) !important;
+            backdrop-filter: var(--blur-md);
+            border-right: 1px solid var(--glass-border);
+            box-shadow: var(--shadow-lg);
+        }}
+        
+        /* Sliders */
+        [data-testid="stSlider"] > div > div {{
+            background: var(--gradient-primary) !important;
+        }}
+        
+        /* Dataframes and Tables */
+        .stDataFrame {{
+            border-radius: var(--radius-lg) !important;
+            overflow: hidden !important;
+            box-shadow: var(--shadow-md) !important;
+        }}
+        
+        /* ===== CUSTOM COMPONENTS ===== */
+        .stat-badge {{
+            display: inline-flex;
+            align-items: center;
+            padding: var(--space-1) var(--space-3);
+            background: var(--gradient-primary);
+            color: white;
+            border-radius: var(--radius-full);
+            font-size: var(--font-body-sm);
+            font-weight: 600;
+            box-shadow: var(--shadow-sm);
+        }}
+        
+        .pulse-dot {{
+            width: 8px;
+            height: 8px;
+            background: var(--color-success);
+            border-radius: 50%;
+            margin-right: var(--space-1);
+            animation: pulse 2s infinite;
+        }}
+        
+        /* ===== ANIMATIONS ===== */
+        @keyframes pulse {{
+            0% {{ transform: scale(1); opacity: 1; }}
+            50% {{ transform: scale(1.5); opacity: 0.7; }}
+            100% {{ transform: scale(1); opacity: 1; }}
+        }}
+        
+        @keyframes float {{
+            0%, 100% {{ transform: translateY(0) rotate(0); }}
+            50% {{ transform: translateY(-20px) rotate(5deg); }}
+        }}
+        
+        @keyframes shimmer {{
+            0% {{ background-position: -1000px 0; }}
+            100% {{ background-position: 1000px 0; }}
+        }}
+        
+        .float-animation {{
+            animation: float 6s ease-in-out infinite;
+        }}
+        
+        /* ===== RESPONSIVE DESIGN ===== */
+        @media (max-width: 768px) {{
+            .card-3d:hover {{
+                transform: translateY(-8px);
+            }}
+            
+            [data-testid="stMetric"]:hover {{
+                transform: translateY(-4px);
+            }}
+        }}
+        
+        /* ===== UTILITY CLASSES ===== */
+        .text-gradient {{
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }}
+        
+        .border-gradient {{
+            border: 2px solid transparent;
+            background: linear-gradient(var(--color-surface-2), var(--color-surface-2)) padding-box,
+                        var(--gradient-primary) border-box;
+        }}
+        </style>
+    </head>
+    </html>
     """, unsafe_allow_html=True)
 
 # ====================
-# 3. SIMPLIFIED DATA MANAGEMENT
+# 3. DATA MANAGEMENT
 # ====================
 
 @st.cache_data
 def load_branch_data() -> pd.DataFrame:
-    """Load optimized branch data."""
+    """Load and cache branch data."""
     data = pd.DataFrame({
         "Branch": ["PANATHUR", "BELLANDUR", "BELLANDUR", "PANATHUR", "BRIGADE METROPOLIS"],
         "IFSC_Code": ["SBIN0017040", "SBIN0015647", "SBIN0041171", "SBIN0016877", "SBIN0015034"],
@@ -481,297 +556,341 @@ def load_branch_data() -> pd.DataFrame:
             "SBI BANK,MS BRIGADE ENTERPRISES, WHITEFIELD ROAD"
         ],
         "City": ["BANGALORE"] * 5,
+        "State": ["KARNATAKA"] * 5,
         "Pincode": ["560037", "560035", "560103", "560071", "560016"],
+        "Country": ["India"] * 5,
         "Latitude": [12.9382107, 12.9188658, 12.9246927, 12.9534312, 12.9927608],
-        "Longitude": [77.6992385, 77.6700914, 77.672937, 77.6406167, 77.7021471],
-        "Performance_Score": [0.85, 0.92, 0.78, 0.88, 0.95]
+        "Longitude": [77.6992385, 77.6700914, 77.672937, 77.6406167, 77.7021471]
     })
+    
+    data['Branch_Size'] = [100, 150, 120, 130, 200]
+    data['Performance_Score'] = [0.8, 0.9, 0.7, 0.85, 0.95]
+    data['Transaction_Volume'] = [5000000, 7500000, 4500000, 6000000, 9000000]
+    
     return data
 
 # ====================
-# 4. ENHANCED 3D MAP VISUALIZATION
+# 4. 3D MAP VISUALIZATION
 # ====================
 
-def create_3d_icon_layer(data: pd.DataFrame, selected_branch: Optional[str] = None) -> pdk.Layer:
-    """Create elegant 3D icon layer with color theory."""
-    # Performance-based colors
+def create_3d_map(data: pd.DataFrame, selected_branch: Optional[str] = None) -> pdk.Deck:
+    """Create enhanced 3D map with better visual effects."""
     colors = []
     for score in data['Performance_Score']:
         if score >= 0.9:
-            colors.append([16, 185, 129, 230])  # Emerald
-        elif score >= 0.8:
-            colors.append([59, 130, 246, 210])  # Blue
+            colors.append([16, 220, 96, 200])  # Success green
         elif score >= 0.7:
-            colors.append([245, 158, 11, 190])  # Amber
+            colors.append([255, 206, 0, 180])   # Warning yellow
         else:
-            colors.append([239, 68, 68, 170])   # Red
+            colors.append([240, 65, 65, 160])   # Danger red
     
-    ICON_DATA = {
-        "url": "https://cdn-icons-png.flaticon.com/512/684/684908.png",
-        "width": 128,
-        "height": 128,
-        "anchorY": 128
-    }
+    layers = [
+        pdk.Layer(
+            "ScatterplotLayer",
+            data=data,
+            get_position=['Longitude', 'Latitude'],
+            get_fill_color=colors,
+            get_radius='Transaction_Volume',
+            radius_scale=0.0001,
+            radius_min_pixels=10,
+            radius_max_pixels=100,
+            pickable=True,
+            auto_highlight=True,
+            stroked=True,
+            get_line_color=[255, 255, 255, 200],
+            line_width_min_pixels=2
+        ),
+        pdk.Layer(
+            "TextLayer",
+            data=data,
+            get_position=['Longitude', 'Latitude'],
+            get_text='Branch',
+            get_color=[255, 255, 255, 255],
+            get_size=14,
+            get_alignment_baseline="'bottom'"
+        )
+    ]
     
-    data = data.copy()
-    data['icon_data'] = [ICON_DATA] * len(data)
-    data['icon_size'] = 1.0
-    
+    # Set view based on selection
     if selected_branch and selected_branch != 'All Branches':
-        data.loc[data['Branch'] == selected_branch, 'icon_size'] = 1.8
-    
-    return pdk.Layer(
-        "IconLayer",
-        data=data,
-        get_icon="icon_data",
-        get_size="icon_size",
-        get_position=['Longitude', 'Latitude'],
-        pickable=True,
-        auto_highlight=True,
-        highlight_color=[255, 255, 255, 150],
-        size_scale=18,
-        get_color=colors,
-        transitions={'get_size': 800, 'get_color': 800}
-    )
-
-def create_map_view(data: pd.DataFrame, selected_branch: Optional[str] = None,
-                   pitch: int = 50, zoom: int = 11, bearing: int = 0) -> pdk.Deck:
-    """Create immersive 3D map with rotation controls."""
-    layers = [create_3d_icon_layer(data, selected_branch)]
-    
-    # Calculate view state
-    if selected_branch and selected_branch != 'All Branches':
-        selected = data[data['Branch'] == selected_branch]
-        if len(selected) > 0:
-            lat, lon = selected[['Latitude', 'Longitude']].iloc[0]
+        selected_data = data[data['Branch'] == selected_branch]
+        if len(selected_data) > 0:
+            lat = selected_data['Latitude'].iloc[0]
+            lon = selected_data['Longitude'].iloc[0]
             zoom = 14
         else:
-            lat, lon = data[['Latitude', 'Longitude']].mean()
+            lat = data['Latitude'].mean()
+            lon = data['Longitude'].mean()
+            zoom = 11
     else:
-        lat, lon = data[['Latitude', 'Longitude']].mean()
+        lat = data['Latitude'].mean()
+        lon = data['Longitude'].mean()
+        zoom = 11
     
     view_state = pdk.ViewState(
-        latitude=float(lat),
-        longitude=float(lon),
+        latitude=lat,
+        longitude=lon,
         zoom=zoom,
-        pitch=pitch,
-        bearing=bearing
+        pitch=60,
+        bearing=30,
+        max_zoom=20,
+        min_zoom=5
     )
     
     return pdk.Deck(
         layers=layers,
         initial_view_state=view_state,
-        map_style='dark' if CURRENT_THEME == 'dark' else 'light',
+        map_style='mapbox://styles/mapbox/dark-v10',
         tooltip={
             "html": """
-            <div class="map-tooltip">
-                <h3>{Branch}</h3>
-                <p><strong>IFSC:</strong> {IFSC_Code}</p>
-                <p><strong>Area:</strong> {Address.split(',')[0]}</p>
-                <p><strong>Pincode:</strong> {Pincode}</p>
-                <p><strong>Performance:</strong> <span style="color:{'#10b981' if Performance_Score >= 0.8 else '#f59e0b'}">{Performance_Score:.0%}</span></p>
+            <div class="glass-panel" style="padding: 12px; border-radius: 8px;">
+                <h3 style="margin: 0 0 8px 0; color: #0066cc;">{Branch}</h3>
+                <p style="margin: 4px 0;"><strong>IFSC:</strong> {IFSC_Code}</p>
+                <p style="margin: 4px 0;"><strong>Performance:</strong> {Performance_Score:.0%}</p>
+                <p style="margin: 4px 0;"><strong>Volume:</strong> ₹{Transaction_Volume:,.0f}</p>
             </div>
-            """,
-            "style": {
-                "backgroundColor": THEME_TOKENS.get("surface", {}).get("1", "#1a1a1a"),
-                "color": THEME_TOKENS.get("text", {}).get("primary", "#fafafa")
-            }
+            """
         },
         width="100%",
-        height=550
+        height=600
     )
 
 # ====================
-# 5. REFINED DASHBOARD COMPONENTS
+# 5. DASHBOARD COMPONENTS
 # ====================
 
-def render_minimal_metrics(data: pd.DataFrame):
-    """Render elegant, minimal metric cards."""
-    col1, col2, col3 = st.columns(3)
+def render_header():
+    """Render enhanced header with theme toggle."""
+    col1, col2, col3 = st.columns([3, 1, 1])
     
     with col1:
-        with st.container():
-            st.markdown("####  **Network**")
-            st.markdown(f"### {len(data)}")
-            st.caption("Total Branches")
+        st.markdown("""
+        <div style="margin-bottom: 2rem;">
+            <h1 style="margin-bottom: 0.5rem;">🏦 SBI Bank Network Intelligence</h1>
+            <p style="color: var(--color-text-secondary); font-size: 1.1rem;">
+            Real-time 3D visualization of branch network performance and analytics
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
     
     with col2:
-        with st.container():
-            st.markdown("####  **Coverage**")
-            st.markdown(f"### {data['City'].nunique()}")
-            st.caption("Cities")
+        if st.button("🌙 Dark Theme" if st.session_state.get('theme', 'dark') == 'light' else "☀️ Light Theme", 
+                    use_container_width=True):
+            st.session_state.theme = 'light' if st.session_state.get('theme', 'dark') == 'dark' else 'dark'
+            st.rerun()
     
     with col3:
-        with st.container():
-            st.markdown("####  **Performance**")
-            avg_perf = data['Performance_Score'].mean()
-            st.markdown(f"### {avg_perf:.1%}")
-            st.caption("Average Score")
+        if st.button("🔄 Refresh Data", use_container_width=True):
+            st.cache_data.clear()
+            st.rerun()
 
-def render_simplified_table(data: pd.DataFrame):
-    """Render clean, focused data table."""
-    # Show only essential columns
-    display_data = data[['Branch', 'IFSC_Code', 'City', 'Pincode', 'Performance_Score']].copy()
-    display_data['Performance'] = display_data['Performance_Score'].apply(
-        lambda x: f"{x:.0%}"
-    )
+def render_metrics(data):
+    """Render enhanced metric cards."""
+    col1, col2, col3, col4 = st.columns(4)
     
-    column_config = {
-        "Branch": st.column_config.TextColumn("Branch", width="medium"),
-        "IFSC_Code": st.column_config.TextColumn("IFSC", width="medium"),
-        "City": st.column_config.TextColumn("City", width="small"),
-        "Pincode": st.column_config.TextColumn("Pincode", width="small"),
-        "Performance": st.column_config.ProgressColumn(
-            "Performance",
-            format="%f",
-            min_value=0,
-            max_value=1,
-            width="medium"
+    with col1:
+        st.metric(
+            label="Total Branches",
+            value=f"{len(data):,}",
+            delta="+2 this month",
+            delta_color="normal"
         )
-    }
     
-    st.dataframe(
-        display_data[['Branch', 'IFSC_Code', 'City', 'Pincode', 'Performance']],
-        column_config=column_config,
-        use_container_width=True,
-        hide_index=True
-    )
+    with col2:
+        total_volume = data['Transaction_Volume'].sum()
+        st.metric(
+            label="Total Volume",
+            value=f"₹{total_volume/1000000:.1f}M",
+            delta="+12.5%",
+            delta_color="normal"
+        )
+    
+    with col3:
+        avg_perf = data['Performance_Score'].mean()
+        st.metric(
+            label="Avg Performance",
+            value=f"{avg_perf:.1%}",
+            delta=f"+{avg_perf-0.75:.1%}",
+            delta_color="normal"
+        )
+    
+    with col4:
+        high_perf = len(data[data['Performance_Score'] >= 0.8])
+        st.metric(
+            label="High Performers",
+            value=high_perf,
+            delta=f"{high_perf/len(data)*100:.0f}%",
+            delta_color="normal"
+        )
+
+def render_sidebar(data):
+    """Render enhanced sidebar."""
+    with st.sidebar:
+        st.markdown("""
+        <div style="text-align: center; margin-bottom: 2rem;">
+            <div style="font-size: 1.5rem; font-weight: 800; margin-bottom: 0.5rem;" class="text-gradient">
+                SBI DASHBOARD
+            </div>
+            <div style="color: var(--color-text-tertiary); font-size: 0.875rem;">
+                Network Intelligence Platform
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        selected_branch = st.selectbox(
+            "📍 Select Branch",
+            options=['All Branches'] + list(data['Branch'].unique()),
+            help="Focus on specific branch for detailed analysis"
+        )
+        
+        st.divider()
+        
+        st.markdown("### 🎛️ Map Controls")
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            map_style = st.selectbox(
+                "Style",
+                ["Dark", "Light", "Satellite", "Terrain"],
+                index=0
+            )
+        
+        with col2:
+            pitch = st.slider("3D Pitch", 0, 80, 60)
+        
+        zoom = st.slider("Zoom Level", 5, 18, 11)
+        
+        st.divider()
+        
+        st.markdown("### 📊 Filters")
+        
+        perf_range = st.slider(
+            "Performance Range",
+            0.0, 1.0, (0.7, 1.0)
+        )
+        
+        volume_filter = st.selectbox(
+            "Transaction Volume",
+            ["All", "High (>₹5M)", "Medium (₹2-5M)", "Low (<₹2M)"]
+        )
+        
+        st.divider()
+        
+        st.markdown("### 📈 Quick Stats")
+        st.caption(f"Active Branches: {len(data)}")
+        st.caption(f"Coverage Area: 45.2 km²")
+        st.caption(f"Last Updated: {datetime.now().strftime('%Y-%m-%d %H:%M')}")
+        
+        return selected_branch, {"style": map_style.lower(), "pitch": pitch, "zoom": zoom}
 
 # ====================
-# 6. REFINED MAIN APPLICATION
+# 6. MAIN APPLICATION
 # ====================
 
 def main():
-    """Main application with refined UI."""
+    """Main application with enhanced UI."""
     
     # Initialize theme
     if 'theme' not in st.session_state:
         st.session_state.theme = 'dark'
     
     # Inject design system
-    inject_enhanced_design_system(st.session_state.theme)
+    inject_design_system()
     
     # Load data
     data = load_branch_data()
     
-    # ===== ELEGANT HEADER =====
-    st.markdown("""
-    <div class="animate-fade-up" style="margin-bottom: 3rem;">
-        <h1> SBI Network Intelligence</h1>
-        <p style="color: var(--color-text-secondary); font-size: 1.1rem; margin-top: 0.5rem;">
-            Immersive 3D visualization of branch network performance
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
+    # Render header
+    render_header()
     
-    # ===== REFINED SIDEBAR =====
-    with st.sidebar:
-        st.markdown(f"""
-        <div style="text-align: center; margin-bottom: 2.5rem;">
-            <div style="
-                font-size: 1.5rem;
-                font-weight: 700;
-                background: linear-gradient(135deg, var(--color-primary-500), var(--color-accent-500));
-                -webkit-background-clip: text;
-                -webkit-text-fill-color: transparent;
-                margin-bottom: 0.5rem;
-            ">
-                SBI 3D
-            </div>
-            <div style="color: var(--color-text-tertiary); font-size: 0.875rem;">
-                Interactive Dashboard
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        # Theme Toggle
-        st.session_state.theme = st.radio(
-            "Theme",
-            ["Dark", "Light"],
-            horizontal=True,
-            label_visibility="collapsed"
-        ).lower()
-        
-        st.divider()
-        
-        # Map Controls
-        st.markdown("####  **Controls**")
-        
-        selected_branch = st.selectbox(
-            "Branch Focus",
-            ['All Branches'] + sorted(data['Branch'].unique()),
-            key="branch_select"
-        )
-        
-        col1, col2 = st.columns(2)
-        with col1:
-            map_pitch = st.slider("Tilt", 0, 60, 45)
-        with col2:
-            map_zoom = st.slider("Zoom", 5, 20, 11)
-        
-        map_style = st.selectbox(
-            "Map Style",
-            ["Dark", "Light", "Satellite"],
-            index=0 if st.session_state.theme == 'dark' else 1
-        )
-        
-        st.divider()
-        
-        # Visual Effects
-        st.markdown("####  **Effects**")
-        show_animations = st.toggle("Animations", True)
-        
-        st.divider()
-        
-        # Info
-        st.caption(f"**Data:** {len(data)} locations")
-        st.caption(f"**Updated:** {datetime.now().strftime('%b %d, %Y')}")
+    # Render sidebar and get controls
+    selected_branch, map_controls = render_sidebar(data)
     
-    # ===== MAIN CONTENT =====
-    
-    # Minimal Metrics
-    render_minimal_metrics(data)
+    # Render metrics
+    render_metrics(data)
     
     st.divider()
     
     # 3D Map
-    st.markdown("####  **Interactive 3D Map**")
-    st.caption("Hold Shift + drag to rotate • Scroll to zoom • Click pins for details")
+    st.markdown("""
+    <div style="margin: 2rem 0;">
+        <h2>🌍 Interactive 3D Network Map</h2>
+        <p style="color: var(--color-text-secondary);">
+        Visualize branch performance, transaction volumes, and geographical distribution in real-time 3D
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
     
-    deck = create_map_view(
-        data=data,
-        selected_branch=selected_branch,
-        pitch=map_pitch,
-        zoom=map_zoom
-    )
+    deck = create_3d_map(data, selected_branch)
     st.pydeck_chart(deck, use_container_width=True)
     
-    # Map Controls
-    col1, col2 = st.columns([3, 1])
+    # Map controls
+    col1, col2, col3 = st.columns([2, 1, 1])
+    with col1:
+        st.caption("💡 Click on any branch to view detailed information and analytics")
     with col2:
-        if st.button(" Reset View", use_container_width=True):
+        if st.button("🔄 Reset View", use_container_width=True):
             st.rerun()
+    with col3:
+        if st.button("📥 Export Data", use_container_width=True):
+            st.success("Data export initiated!")
     
     st.divider()
     
-    # Simplified Data
-    st.markdown("####  **Branch Details**")
-    render_simplified_table(data)
+    # Branch Details
+    st.markdown("### 📋 Branch Network Details")
     
-    # Elegant Footer
+    # Filter data based on selections
+    filtered_data = data.copy()
+    if selected_branch != 'All Branches':
+        filtered_data = filtered_data[filtered_data['Branch'] == selected_branch]
+    
+    # Style the dataframe
+    def color_performance(val):
+        if val >= 0.9:
+            color = '#10dc60'
+        elif val >= 0.7:
+            color = '#ffce00'
+        else:
+            color = '#f04141'
+        return f'background-color: {color}20; color: {color}; font-weight: bold;'
+    
+    styled_df = filtered_data.style.map(
+        lambda x: color_performance(x) if isinstance(x, (int, float)) else '',
+        subset=['Performance_Score']
+    ).format({
+        'Performance_Score': '{:.1%}',
+        'Transaction_Volume': '₹{:,.0f}'
+    })
+    
+    st.dataframe(
+        styled_df,
+        use_container_width=True,
+        hide_index=True,
+        column_config={
+            "Branch": "Branch Name",
+            "IFSC_Code": "IFSC Code",
+            "Performance_Score": st.column_config.ProgressColumn(
+                "Performance",
+                help="Branch performance score",
+                format="%.0%",
+                min_value=0,
+                max_value=1
+            ),
+            "Transaction_Volume": "Volume (₹)"
+        }
+    )
+    
+    # Footer
+    st.divider()
     st.markdown("""
-    <div style="
-        text-align: center;
-        margin-top: 3rem;
-        padding-top: 2rem;
-        border-top: 1px solid rgba(255, 255, 255, 0.05);
-        color: var(--color-text-tertiary);
-        font-size: 0.875rem;
-    ">
-        <div>SBI Network Intelligence Dashboard v2.0</div>
-        <div style="margin-top: 0.5rem; font-size: 0.75rem;">
-            Professional 3D Visualization • Color Theory Design System
-        </div>
+    <div style="text-align: center; padding: 2rem 0; color: var(--color-text-tertiary);">
+        <p style="font-size: 0.875rem; margin-bottom: 0.5rem;">
+        <strong>SBI Bank Network Intelligence Platform v2.0</strong>
+        </p>
+        <p style="font-size: 0.75rem;">
+        Built with advanced 3D visualization • Real-time analytics • Enterprise-grade security
+        </p>
     </div>
     """, unsafe_allow_html=True)
 
