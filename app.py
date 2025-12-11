@@ -38,100 +38,147 @@ def load_branch_data() -> pd.DataFrame:
 data = load_branch_data()
 
 # ====================
-# 3. CSS INJECTION (Gradient + Fonts + Animations)
+# 3. CSS (Bootstrap-like + Color Theory + Smooth Animations)
 # ====================
-def inject_pro_ui():
-    st.markdown(f"""
+def inject_modern_ui():
+    st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
 
-    /* GENERAL */
-    .stApp {{
+    /* --- GENERAL --- */
+    body, .stApp {
         font-family: 'Inter', sans-serif;
-        background: linear-gradient(160deg, #f0f4ff 0%, #ffffff 100%);
+        background: #f4f7fa;
         color: #212529;
-    }}
-    .block-container {{
-        padding: 28px 32px;
+        margin:0;
+        padding:0;
+    }
+    .block-container {
+        padding: 24px 32px;
         max-width: 1400px;
         margin: auto;
-    }}
+    }
 
-    /* SIDEBAR */
-    [data-testid="stSidebar"] {{
-        background: linear-gradient(180deg, #4facfe 0%, #00f2fe 100%);
+    /* --- SIDEBAR --- */
+    [data-testid="stSidebar"] {
+        background: linear-gradient(180deg, #1e3c72 0%, #2a5298 100%);
         padding: 24px;
         border-radius: 16px;
         color: white;
         font-weight: 600;
-    }}
-    [data-testid="stSidebar"] h2 {{
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    }
+    [data-testid="stSidebar"] h2 {
         font-size: 1.5rem;
         font-weight: 700;
         margin-bottom: 20px;
-    }}
-    [data-testid="stSidebar"] select, [data-testid="stSidebar"] input, [data-testid="stSidebar"] label {{
+    }
+    [data-testid="stSidebar"] select, [data-testid="stSidebar"] input, [data-testid="stSidebar"] label {
         color: #212529;
         font-weight: 500;
-    }}
+    }
 
-    /* METRIC CARDS */
-    .metric-card {{
+    /* --- METRIC CARDS --- */
+    .metric-card {
         border-radius: 16px;
         padding: 24px;
         color: white;
-        font-weight: 600;
+        font-weight: 700;
         text-align: center;
-        transition: transform 0.4s, box-shadow 0.4s;
+        transition: transform 0.5s ease, box-shadow 0.5s ease;
         cursor: pointer;
         background: linear-gradient(135deg, #667eea, #764ba2);
         box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-    }}
-    .metric-card:hover {{
-        transform: translateY(-8px) scale(1.02);
-        box-shadow: 0 12px 35px rgba(0,0,0,0.25);
-    }}
-    .metric-label {{
+    }
+    .metric-card.city {
+        background: linear-gradient(135deg, #f7971e, #ffd200);
+    }
+    .metric-card:hover {
+        transform: translateY(-10px) scale(1.03);
+        box-shadow: 0 14px 35px rgba(0,0,0,0.25);
+    }
+    .metric-label {
         font-size: 1rem;
         color: rgba(255,255,255,0.8);
-    }}
-    .metric-value {{
+    }
+    .metric-value {
         font-size: 2rem;
-        font-weight: 700;
         margin-top: 8px;
-    }}
+    }
 
-    /* TABLE */
-    .stDataFrameWrapper {{
+    /* --- TABLE --- */
+    .stDataFrameWrapper {
         border-radius: 16px;
         overflow: hidden;
         box-shadow: 0 8px 20px rgba(0,0,0,0.1);
         background: white;
         font-size: 0.95rem;
-    }}
-    .stDataFrameWrapper table {{
+    }
+    .stDataFrameWrapper table {
         border-collapse: separate;
-        border-spacing: 0 4px;
-    }}
-    .stDataFrameWrapper th {{
+        border-spacing: 0 6px;
+    }
+    .stDataFrameWrapper th {
         background: #667eea;
         color: white;
         font-weight: 600;
         padding: 12px;
-    }}
-    .stDataFrameWrapper td {{
+        text-align: left;
+    }
+    .stDataFrameWrapper td {
         background: #f8f9ff;
         padding: 10px;
         color: #212529;
-    }}
-    .stDataFrameWrapper tr:hover td {{
+    }
+    .stDataFrameWrapper tr:hover td {
         background: #e0e7ff;
         transition: background 0.3s;
-    }}
+    }
+
+    /* --- HEADER --- */
+    .stApp h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        background: linear-gradient(90deg, #667eea, #764ba2);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 0.5rem;
+    }
+    .stApp p {
+        font-size: 1rem;
+        color: #6c757d;
+        margin-top: 0;
+        margin-bottom: 24px;
+    }
+
+    /* --- BUTTONS --- */
+    .stButton>button {
+        background: linear-gradient(135deg,#667eea,#764ba2);
+        color: white;
+        border-radius: 12px;
+        padding: 10px 16px;
+        font-weight: 600;
+        transition: transform 0.4s, box-shadow 0.4s;
+    }
+    .stButton>button:hover {
+        transform: translateY(-2px) scale(1.02);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+    }
+
+    /* --- MAP TOOLTIP --- */
+    .map-tooltip {
+        font-family: 'Inter', sans-serif;
+        border-radius: 10px;
+        padding: 12px;
+        background: linear-gradient(180deg,#667eea,#764ba2);
+        color: white;
+        border: none;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    }
     </style>
     """, unsafe_allow_html=True)
 
-inject_pro_ui()
+inject_modern_ui()
 
 # ====================
 # 4. MAP LAYER
@@ -139,7 +186,7 @@ inject_pro_ui()
 def create_3d_icon_layer(data: pd.DataFrame, selected_branch: Optional[str] = None) -> pdk.Layer:
     ICON_DATA = {"url": "https://cdn-icons-png.flaticon.com/512/684/684908.png", "width": 128, "height": 128, "anchorY":128}
     data = data.copy()
-    data["icon_data"] = [ICON_DATA] * len(data)
+    data["icon_data"] = [ICON_DATA]*len(data)
     data["icon_size"] = 1.2
     if selected_branch and selected_branch != "All Branches":
         data["icon_size"] = data.apply(lambda r: r["icon_size"]*1.6 if r["Branch"]==selected_branch else r["icon_size"]*0.9, axis=1)
@@ -175,7 +222,7 @@ def render_metric_cards(data: pd.DataFrame):
     with col1:
         st.markdown(f"""<div class="metric-card"><div class="metric-label">Total Branches</div><div class="metric-value">{total_branches}</div></div>""", unsafe_allow_html=True)
     with col2:
-        st.markdown(f"""<div class="metric-card" style="background: linear-gradient(135deg, #ff758c, #ff7eb3);"><div class="metric-label">Cities Covered</div><div class="metric-value">{cities}</div></div>""", unsafe_allow_html=True)
+        st.markdown(f"""<div class="metric-card city"><div class="metric-label">Cities Covered</div><div class="metric-value">{cities}</div></div>""", unsafe_allow_html=True)
 
 # ====================
 # 6. MAIN DASHBOARD
@@ -186,7 +233,7 @@ def main():
     map_pitch = st.sidebar.slider("3D Tilt", 0, 60, 45)
     map_zoom = st.sidebar.slider("Zoom Level", 5, 20, 11)
 
-    st.markdown(f"<h1 style='color:#4facfe'>SBI Bank Network Intelligence</h1><p style='color:#6c757d'>Vibrant modern 3D dashboard</p>", unsafe_allow_html=True)
+    st.markdown("<h1>SBI Bank Network Intelligence</h1><p>Modern 3D dashboard with smooth gradients and animations</p>", unsafe_allow_html=True)
 
     render_metric_cards(data)
     st.divider()
