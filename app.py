@@ -1,5 +1,3 @@
-
-
 import streamlit as st
 import pandas as pd
 import pydeck as pdk
@@ -7,375 +5,471 @@ import json
 from datetime import datetime
 from typing import Optional, Dict, Any
 import os
+
 # ====================
 # 1. INITIALIZATION & CONFIG
 # ====================
 
 @st.cache_resource
 def load_design_tokens() -> Dict[str, Any]:
-    """Load design tokens with safe defaults if file is missing."""
+    """Load design tokens with comprehensive dual-theme system."""
     try:
-        # Try to load from theme_tokens.json
         if os.path.exists('theme_tokens.json'):
             with open('theme_tokens.json', 'r') as f:
                 tokens = json.load(f)
-                st.success("Design tokens loaded from theme_tokens.json")
         else:
-            # Create a default tokens structure if file doesn't exist
+            # Sophisticated dual-theme system based on color theory
+            # Primary: Indigo (#6366F1) for trust & professionalism
+            # Accent: Teal (#14B8A6) for energy & modern feel
+            # Neutrals: Warm grays for elegance
             tokens = {
                 "color": {
-                    "primary": {
-                        "50": "#e6f7ff",
-                        "100": "#b3e6ff", 
-                        "200": "#80d4ff",
-                        "300": "#4dc3ff",
-                        "400": "#1ab1ff",
-                        "500": "#00b4db",
-                        "600": "#0099bc",
-                        "700": "#0083b0",
-                        "800": "#006d94", 
-                        "900": "#005778"
-                    },
-                    "surface": {
-                        "0": "#0f2027",
-                        "1": "#142632",
-                        "2": "#1a2c3a",
-                        "3": "#203244"
-                    },
-                    "semantic": {
-                        "success": "#10b981",
-                        "warning": "#f59e0b",
-                        "danger": "#ef4444",
-                        "muted": "rgba(255, 255, 255, 0.6)",
+                    "dark": {
+                        "primary": {
+                            "50": "#e0e7ff", "100": "#c7d2fe", "200": "#a5b4fc",
+                            "300": "#818cf8", "400": "#6366f1", "500": "#4f46e5",
+                            "600": "#4338ca", "700": "#3730a3", "800": "#312e81",
+                            "900": "#1e1b4b"
+                        },
+                        "accent": {
+                            "50": "#f0fdfa", "100": "#ccfbf1", "200": "#99f6e4",
+                            "300": "#5eead4", "400": "#2dd4bf", "500": "#14b8a6",
+                            "600": "#0d9488", "700": "#0f766e", "800": "#115e59",
+                            "900": "#134e4a"
+                        },
+                        "surface": {
+                            "0": "#0a0a0a",    # Base background
+                            "1": "#1a1a1a",    # Card background
+                            "2": "#262626",    # Elevated surfaces
+                            "3": "#404040"     # Borders & dividers
+                        },
                         "text": {
-                            "primary": "rgba(255, 255, 255, 0.95)",
-                            "secondary": "rgba(255, 255, 255, 0.7)",
-                            "tertiary": "rgba(255, 255, 255, 0.5)"
+                            "primary": "#fafafa",
+                            "secondary": "#d4d4d4",
+                            "tertiary": "#a3a3a3"
+                        },
+                        "semantic": {
+                            "success": "#10b981",
+                            "warning": "#f59e0b",
+                            "error": "#ef4444",
+                            "info": "#3b82f6"
                         }
+                    },
+                    "light": {
+                        "primary": {
+                            "50": "#eef2ff", "100": "#e0e7ff", "200": "#c7d2fe",
+                            "300": "#a5b4fc", "400": "#818cf8", "500": "#6366f1",
+                            "600": "#4f46e5", "700": "#4338ca", "800": "#3730a3",
+                            "900": "#1e1b4b"
+                        },
+                        "accent": {
+                            "50": "#f0fdfa", "100": "#ccfbf1", "200": "#99f6e4",
+                            "300": "#5eead4", "400": "#2dd4bf", "500": "#14b8a6",
+                            "600": "#0d9488", "700": "#0f766e", "800": "#115e59",
+                            "900": "#134e4a"
+                        },
+                        "surface": {
+                            "0": "#ffffff",    # Base background
+                            "1": "#fafafa",    # Card background
+                            "2": "#f5f5f5",    # Elevated surfaces
+                            "3": "#e5e5e5"     # Borders & dividers
+                        },
+                        "text": {
+                            "primary": "#171717",
+                            "secondary": "#525252",
+                            "tertiary": "#737373"
+                        },
+                        "semantic": {
+                            "success": "#10b981",
+                            "warning": "#f59e0b",
+                            "error": "#dc2626",
+                            "info": "#2563eb"
+                        }
+                    }
+                },
+                "typography": {
+                    "font_family": "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif",
+                    "font_mono": "'JetBrains Mono', 'SF Mono', Monaco, monospace",
+                    "scale": {
+                        "display": { "xl": "3.75rem", "lg": "3rem", "md": "2.25rem" },
+                        "heading": { "xl": "1.875rem", "lg": "1.5rem", "md": "1.25rem", "sm": "1.125rem" },
+                        "body": { "lg": "1.125rem", "md": "1rem", "sm": "0.875rem" },
+                        "caption": "0.75rem"
+                    },
+                    "weight": {
+                        "light": "300",
+                        "regular": "400",
+                        "medium": "500",
+                        "semibold": "600",
+                        "bold": "700",
+                        "extrabold": "800"
+                    }
+                },
+                "spacing": {
+                    "scale": [0, 4, 8, 12, 16, 20, 24, 32, 40, 48, 56, 64, 80, 96, 128],
+                    "radius": {
+                        "sm": "6px",
+                        "md": "12px",
+                        "lg": "16px",
+                        "xl": "24px",
+                        "full": "9999px"
+                    }
+                },
+                "elevation": {
+                    "levels": {
+                        "0": "0 1px 2px 0 rgb(0 0 0 / 0.05)",
+                        "1": "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)",
+                        "2": "0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)",
+                        "3": "0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)"
+                    },
+                    "blur": {
+                        "sm": "blur(4px)",
+                        "md": "blur(8px)",
+                        "lg": "blur(16px)"
+                    }
+                },
+                "animation": {
+                    "timing": {
+                        "fast": "150ms",
+                        "normal": "300ms",
+                        "slow": "500ms"
+                    },
+                    "easing": {
+                        "default": "cubic-bezier(0.4, 0, 0.2, 1)",
+                        "emphasized": "cubic-bezier(0.2, 0, 0, 1)",
+                        "decelerate": "cubic-bezier(0, 0, 0.2, 1)"
                     }
                 }
             }
-            st.warning(" Using default design tokens. Create theme_tokens.json for customization.")
         
         return tokens
-        
-    except json.JSONDecodeError as e:
-        st.error(f" Error parsing theme_tokens.json: {e}")
-        # Return minimal tokens to keep app running
-        return {
-            "color": {
-                "primary": {"500": "#00b4db", "700": "#0083b0"},
-                "surface": {"0": "#0f2027", "1": "#142632"}
-            }
-        }
-# Initialize
+    except Exception:
+        return {}
+
+# Initialize with dark theme as default
 TOKENS = load_design_tokens()
-PRIMARY_500 = TOKENS["color"]["primary"]["500"]
-PRIMARY_700 = TOKENS["color"]["primary"]["700"]
-SURFACE_0 = TOKENS["color"]["surface"]["0"]
-SURFACE_1 = TOKENS["color"]["surface"]["1"]
+CURRENT_THEME = "dark"  # Will be togglable
+THEME_TOKENS = TOKENS.get("color", {}).get(CURRENT_THEME, {})
 
 st.set_page_config(
-    page_title="SBI Bank Network Intelligence",
-    page_icon="",
+    page_title="SBI Network Intelligence",
+    page_icon="🏦",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
 # ====================
-# 2. DESIGN SYSTEM & STYLING
+# 2. ENHANCED DUAL-THEME DESIGN SYSTEM
 # ====================
-def get_token(tokens: Dict[str, Any], path: str, default: Any = None) -> Any:
-    """
-    Safely get a token from nested dictionary using dot notation.
-    Example: get_token(TOKENS, "color.primary.500")
-    """
-    keys = path.split('.')
-    current = tokens
-    
-    for key in keys:
-        if isinstance(current, dict) and key in current:
-            current = current[key]
-        else:
-            return default
-    
-    return current
 
-def inject_design_system():
-    """Inject comprehensive CSS design system with tokens."""
+def inject_enhanced_design_system(theme: str = "dark"):
+    """Inject sophisticated CSS with dual-theme support and color theory."""
+    theme_tokens = TOKENS.get("color", {}).get(theme, {})
+    typo = TOKENS.get("typography", {})
+    spacing = TOKENS.get("spacing", {})
+    elevation = TOKENS.get("elevation", {})
+    animation = TOKENS.get("animation", {})
+    
+    primary = theme_tokens.get("primary", {})
+    accent = theme_tokens.get("accent", {})
+    surface = theme_tokens.get("surface", {})
+    text = theme_tokens.get("text", {})
+    semantic = theme_tokens.get("semantic", {})
+    
     st.markdown(f"""
     <style>
-    /* ===== CSS CUSTOM PROPERTIES (TOKENS) ===== */
+    /* ===== DUAL-THEME CSS CUSTOM PROPERTIES ===== */
     :root {{
-        /* Color Tokens - Primary */
-        --color-primary-50: {TOKENS.get("color", {}).get("primary", {}).get("50", "#e6f7ff")};
-        --color-primary-500: {PRIMARY_500};
-        --color-primary-700: {PRIMARY_700};
+        /* Color System - Primary & Accent */
+        --color-primary-50: {primary.get('50', '#eef2ff')};
+        --color-primary-500: {primary.get('500', '#6366f1')};
+        --color-primary-700: {primary.get('700', '#4338ca')};
+        --color-accent-500: {accent.get('500', '#14b8a6')};
+        --color-accent-300: {accent.get('300', '#5eead4')};
         
-        /* Color Tokens - Surface */
-        --color-surface-0: {SURFACE_0};
-        --color-surface-1: {SURFACE_1};
-        --color-surface-2: {TOKENS["color"]["surface"]["2"]};
-        --color-surface-3: {TOKENS["color"]["surface"]["3"]};
+        /* Surface Colors */
+        --color-surface-0: {surface.get('0', '#0a0a0a')};
+        --color-surface-1: {surface.get('1', '#1a1a1a')};
+        --color-surface-2: {surface.get('2', '#262626')};
+        --color-surface-3: {surface.get('3', '#404040')};
         
-        /* Color Tokens - Semantic */
-        --color-success: {TOKENS["color"]["semantic"]["success"]};
-        --color-warning: {TOKENS["color"]["semantic"]["warning"]};
-        --color-danger: {TOKENS["color"]["semantic"]["danger"]};
-        --color-muted: {TOKENS["color"]["semantic"]["muted"]};
-        --color-text-primary: {TOKENS["color"]["semantic"]["text"]["primary"]};
-        --color-text-secondary: {TOKENS["color"]["semantic"]["text"]["secondary"]};
+        /* Text Colors */
+        --color-text-primary: {text.get('primary', '#fafafa')};
+        --color-text-secondary: {text.get('secondary', '#d4d4d4')};
+        --color-text-tertiary: {text.get('tertiary', '#a3a3a3')};
         
-        /* Typography Tokens */
-        --font-display-xl: {TOKENS["typography"]["display"]["xl"]};
-        --font-heading-lg: {TOKENS["typography"]["heading"]["lg"]};
-        --font-body-md: {TOKENS["typography"]["body"]["md"]};
-        --font-caption: {TOKENS["typography"]["caption"]};
+        /* Semantic Colors */
+        --color-success: {semantic.get('success', '#10b981')};
+        --color-warning: {semantic.get('warning', '#f59e0b')};
+        --color-error: {semantic.get('error', '#ef4444')};
+        --color-info: {semantic.get('info', '#3b82f6')};
         
-        /* Spacing Tokens (8px baseline) */
-        --space-1: {TOKENS["spacing"]["base"]};
-        --space-2: calc({TOKENS["spacing"]["base"]} * 2);
-        --space-3: calc({TOKENS["spacing"]["base"]} * 3);
-        --space-4: calc({TOKENS["spacing"]["base"]} * 4);
+        /* Typography System */
+        --font-family: {typo.get('font_family', "'Inter', sans-serif")};
+        --font-mono: {typo.get('font_mono', "'JetBrains Mono', monospace")};
+        --font-display-lg: {typo.get('scale', {}).get('display', {}).get('lg', '3rem')};
+        --font-heading-md: {typo.get('scale', {}).get('heading', {}).get('md', '1.25rem')};
+        --font-body-md: {typo.get('scale', {}).get('body', {}).get('md', '1rem')};
+        --font-caption: {typo.get('scale', {}).get('caption', '0.75rem')};
         
-        /* Animation Tokens */
-        --animation-duration-normal: {TOKENS["animation"]["duration"]["normal"]};
-        --animation-easing-standard: {TOKENS["animation"]["easing"]["standard"]};
+        /* Spacing & Layout */
+        --radius-md: {spacing.get('radius', {}).get('md', '12px')};
+        --radius-lg: {spacing.get('radius', {}).get('lg', '16px')};
+        --space-3: {spacing.get('scale', [0,4,8,12,16,20,24,32,40,48,56,64,80,96,128])[3]}px;
+        --space-4: {spacing.get('scale', [0,4,8,12,16,20,24,32,40,48,56,64,80,96,128])[4]}px;
+        --space-6: {spacing.get('scale', [0,4,8,12,16,20,24,32,40,48,56,64,80,96,128])[6]}px;
         
-        /* Elevation Tokens */
-        --shadow-md: {TOKENS["elevation"]["shadow"]["md"]};
-        --blur-md: {TOKENS["elevation"]["blur"]["md"]};
+        /* Elevation & Depth */
+        --shadow-1: {elevation.get('levels', {}).get('1', '0 4px 6px -1px rgb(0 0 0 / 0.1)')};
+        --shadow-2: {elevation.get('levels', {}).get('2', '0 10px 15px -3px rgb(0 0 0 / 0.1)')};
+        --shadow-3: {elevation.get('levels', {}).get('3', '0 20px 25px -5px rgb(0 0 0 / 0.1)')};
+        --blur-md: {elevation.get('blur', {}).get('md', 'blur(8px)')};
+        
+        /* Animation */
+        --timing-normal: {animation.get('timing', {}).get('normal', '300ms')};
+        --easing-default: {animation.get('easing', {}).get('default', 'cubic-bezier(0.4, 0, 0.2, 1)')};
     }}
     
-    /* ===== BASE STYLES ===== */
+    /* ===== BASE RESET & THEME APPLICATIONS ===== */
     .stApp {{
-        background: var(--color-surface-0);
-        color: var(--color-text-primary);
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        background: var(--color-surface-0) !important;
+        color: var(--color-text-primary) !important;
+        font-family: var(--font-family) !important;
+        font-weight: 400;
+        line-height: 1.6;
+        letter-spacing: -0.01em;
     }}
     
-    /* ===== 60-30-10 LAYOUT SYSTEM ===== */
-    /* 60%: Main Content Area */
-    .main-block {{
-        background: var(--color-surface-0);
+    /* ===== ELEGANT TYPOGRAPHY HIERARCHY ===== */
+    h1, h2, h3, h4, h5, h6 {{
+        font-weight: 600;
+        letter-spacing: -0.025em;
+        line-height: 1.2;
     }}
     
-    /* 30%: Secondary/Sidebar */
-    [data-testid="stSidebar"] {{
-        background: var(--color-surface-1) !important;
+    .stMarkdown h1 {{
+        font-size: var(--font-display-lg) !important;
+        background: linear-gradient(135deg, var(--color-primary-500), var(--color-accent-500));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 0.5rem !important;
+    }}
+    
+    .stMarkdown h2 {{
+        font-size: var(--font-heading-md) !important;
+        color: var(--color-text-primary) !important;
+        margin-top: 2rem !important;
+        margin-bottom: 1rem !important;
+    }}
+    
+    /* ===== REFINED CARD SYSTEM ===== */
+    .glass-card {{
+        background: linear-gradient(
+            145deg,
+            rgba(255, 255, 255, 0.05),
+            rgba(255, 255, 255, 0.02)
+        ) !important;
         backdrop-filter: var(--blur-md);
-        border-right: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: var(--radius-lg) !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        box-shadow: var(--shadow-1) !important;
+        transition: all var(--timing-normal) var(--easing-default) !important;
     }}
     
-    /* 10%: Accent/Highlights */
-    .accent-element {{
-        background: linear-gradient(135deg, var(--color-primary-500), var(--color-primary-700));
+    .glass-card:hover {{
+        transform: translateY(-4px) scale(1.01);
+        box-shadow: var(--shadow-3) !important;
+        border-color: rgba(255, 255, 255, 0.12) !important;
     }}
     
-    /* ===== TYPOGRAPHY SCALE ===== */
-    h1 {{
-        font-size: var(--font-display-xl);
-        font-weight: 800;
-        line-height: {TOKENS["typography"]["lineHeight"]["tight"]};
-        letter-spacing: {TOKENS["typography"]["letterSpacing"]["tight"]};
-        margin-bottom: var(--space-2);
-    }}
+    /* ===== STREAMLIT COMPONENT OVERHAUL ===== */
     
-    h2 {{
-        font-size: var(--font-heading-lg);
-        font-weight: 700;
-        line-height: {TOKENS["typography"]["lineHeight"]["normal"]};
-        margin-bottom: var(--space-3);
-    }}
-    
-    .body-text {{
-        font-size: var(--font-body-md);
-        line-height: {TOKENS["typography"]["lineHeight"]["relaxed"]};
-        color: var(--color-text-secondary);
-    }}
-    
-    .caption {{
-        font-size: var(--font-caption);
-        color: var(--color-muted);
-        text-transform: uppercase;
-        letter-spacing: {TOKENS["typography"]["letterSpacing"]["wide"]};
-    }}
-    
-    /* ===== ELEVATION SYSTEM ===== */
-    .card-surface-0 {{
-        background: var(--color-surface-0);
-        border: 1px solid rgba(255, 255, 255, 0.05);
-        border-radius: 16px;
-    }}
-    
-    .card-surface-1 {{
-        background: var(--color-surface-1);
-        backdrop-filter: var(--blur-md);
-        border-radius: 16px;
-        box-shadow: var(--shadow-md);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        transition: all var(--animation-duration-normal) var(--animation-easing-standard);
-    }}
-    
-    .card-surface-2 {{
-        background: var(--color-surface-2);
-        backdrop-filter: var(--blur-md);
-        border-radius: 16px;
-        box-shadow: var(--shadow-md);
-        border: 1px solid rgba(255, 255, 255, 0.12);
-        transition: all var(--animation-duration-normal) var(--animation-easing-standard);
-    }}
-    
-    /* Hover Effects with Depth */
-    .card-surface-1:hover, .card-surface-2:hover {{
-        transform: translateY(-6px);
-        box-shadow: {TOKENS["elevation"]["shadow"]["lg"]};
-        border-color: rgba(255, 255, 255, 0.15);
-    }}
-    
-    /* ===== STREAMLIT COMPONENT OVERRIDES ===== */
-    /* Metric Cards */
+    /* Metric Cards - Elegant Redesign */
     [data-testid="stMetric"] {{
         background: var(--color-surface-1) !important;
-        backdrop-filter: var(--blur-md);
-        border-radius: 16px !important;
-        padding: var(--space-4) !important;
-        border-left: 4px solid var(--color-primary-500);
-        transition: all var(--animation-duration-normal) var(--animation-easing-standard);
+        border-radius: var(--radius-lg) !important;
+        padding: var(--space-6) var(--space-4) !important;
+        border-left: 4px solid var(--color-accent-500) !important;
+        box-shadow: var(--shadow-1) !important;
+        transition: all var(--timing-normal) var(--easing-default) !important;
     }}
     
     [data-testid="stMetric"]:hover {{
-        transform: translateY(-4px);
-        border-left-color: var(--color-primary-700);
-        background: var(--color-surface-2) !important;
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-2) !important;
+        border-left-color: var(--color-accent-300) !important;
     }}
     
     [data-testid="stMetricLabel"] {{
         color: var(--color-text-secondary) !important;
         font-size: var(--font-caption) !important;
+        font-weight: 500 !important;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
     }}
     
     [data-testid="stMetricValue"] {{
         color: var(--color-text-primary) !important;
-        font-size: var(--font-heading-lg) !important;
+        font-size: 2rem !important;
         font-weight: 700 !important;
+        line-height: 1.1 !important;
     }}
     
-    /* Buttons */
+    [data-testid="stMetricDelta"] {{
+        font-weight: 600 !important;
+    }}
+    
+    /* Sidebar - Minimal & Elegant */
+    [data-testid="stSidebar"] {{
+        background: linear-gradient(
+            180deg,
+            var(--color-surface-1),
+            var(--color-surface-0)
+        ) !important;
+        border-right: 1px solid rgba(255, 255, 255, 0.05) !important;
+    }}
+    
+    /* Form Controls - Modern */
+    .stSelectbox, .stSlider, .stTextInput {{
+        background: var(--color-surface-2) !important;
+        border-radius: var(--radius-md) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        transition: all 200ms ease !important;
+    }}
+    
+    .stSelectbox:hover, .stSlider:hover {{
+        border-color: var(--color-primary-500) !important;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1) !important;
+    }}
+    
+    /* Buttons - Sophisticated */
     .stButton > button {{
-        background: linear-gradient(135deg, var(--color-primary-500), var(--color-primary-700)) !important;
+        background: linear-gradient(
+            135deg,
+            var(--color-primary-500),
+            var(--color-primary-700)
+        ) !important;
         color: white !important;
         border: none !important;
-        border-radius: 12px !important;
-        padding: var(--space-2) var(--space-4) !important;
+        border-radius: var(--radius-md) !important;
+        padding: 0.75rem 1.5rem !important;
         font-weight: 600 !important;
-        transition: all var(--animation-duration-normal) var(--animation-easing-standard) !important;
+        letter-spacing: 0.025em;
+        transition: all var(--timing-normal) var(--easing-default) !important;
+        box-shadow: var(--shadow-1) !important;
     }}
     
     .stButton > button:hover {{
-        transform: translateY(-2px) scale(1.02);
-        box-shadow: 0 8px 24px rgba(0, 180, 219, 0.3);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-2) !important;
+        background: linear-gradient(
+            135deg,
+            var(--color-primary-400),
+            var(--color-primary-600)
+        ) !important;
     }}
     
-    /* Selectboxes */
-    [data-testid="stSelectbox"] {{
-        background: var(--color-surface-2) !important;
-        border-radius: 12px !important;
+    /* Data Table - Clean */
+    .stDataFrame {{
+        border-radius: var(--radius-lg) !important;
+        overflow: hidden !important;
+    }}
+    
+    /* Divider - Subtle */
+    hr {{
+        border: none;
+        height: 1px;
+        background: linear-gradient(
+            90deg,
+            transparent,
+            rgba(255, 255, 255, 0.1),
+            transparent
+        ) !important;
+        margin: 2rem 0 !important;
+    }}
+    
+    /* Tooltip - Elegant */
+    .map-tooltip {{
+        background: var(--color-surface-1) !important;
+        backdrop-filter: var(--blur-md) !important;
+        border-radius: var(--radius-md) !important;
         border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        box-shadow: var(--shadow-3) !important;
+        padding: 1rem !important;
+        max-width: 280px !important;
     }}
     
-    /* Sliders */
-    [data-testid="stSlider"] {{
-        color: var(--color-primary-500) !important;
+    .map-tooltip h3 {{
+        color: var(--color-accent-500) !important;
+        margin: 0 0 0.5rem 0 !important;
+        font-size: 1.1rem !important;
+        font-weight: 600 !important;
     }}
     
-    /* Sidebar Styling */
-    [data-testid="stSidebar"] .stSelectbox,
-    [data-testid="stSidebar"] .stSlider {{
-        background: var(--color-surface-2) !important;
+    .map-tooltip p {{
+        color: var(--color-text-secondary) !important;
+        margin: 0.25rem 0 !important;
+        font-size: 0.875rem !important;
+        line-height: 1.4 !important;
     }}
     
-    /* ===== ANIMATION UTILITIES ===== */
-    @keyframes float {{
-        0%, 100% {{ transform: translateY(0px); }}
-        50% {{ transform: translateY(-10px); }}
-    }}
-    
-    @keyframes pulse-ring {{
-        0% {{ transform: scale(0.8); opacity: 0.8; }}
-        80%, 100% {{ transform: scale(2); opacity: 0; }}
-    }}
-    
-    @keyframes fade-in-up {{
-        from {{ opacity: 0; transform: translateY(20px); }}
+    /* ===== ANIMATIONS & MICRO-INTERACTIONS ===== */
+    @keyframes fadeSlideUp {{
+        from {{ opacity: 0; transform: translateY(12px); }}
         to {{ opacity: 1; transform: translateY(0); }}
     }}
     
-    .float-animation {{
-        animation: float 3s ease-in-out infinite;
+    @keyframes float {{
+        0%, 100% {{ transform: translateY(0px); }}
+        50% {{ transform: translateY(-8px); }}
     }}
     
-    .fade-in-up {{
-        animation: fade-in-up 0.6s var(--animation-easing-standard);
+    .animate-fade-up {{
+        animation: fadeSlideUp 0.6s var(--easing-default) forwards;
     }}
     
-    /* ===== ACCESSIBILITY ===== */
-    @media (prefers-reduced-motion: reduce) {{
-        *, ::before, ::after {{
-            animation-duration: 0.01ms !important;
-            animation-iteration-count: 1 !important;
-            transition-duration: 0.01ms !important;
-        }}
-        
-        .float-animation, .fade-in-up {{
-            animation: none;
-        }}
+    .animate-float {{
+        animation: float 3s var(--easing-default) infinite;
     }}
     
     /* ===== RESPONSIVE DESIGN ===== */
     @media (max-width: 768px) {{
         :root {{
-            --font-display-xl: 2.5rem;
-            --font-heading-lg: 1.5rem;
+            --font-display-lg: 2.25rem;
+            --font-heading-md: 1.25rem;
         }}
         
-        .card-surface-1, .card-surface-2 {{
-            margin-bottom: var(--space-3);
+        .stMetricValue {{
+            font-size: 1.75rem !important;
         }}
     }}
     
-    /* ===== CUSTOM MAP TOOLTIP ===== */
-    .map-tooltip {{
-        background: var(--color-surface-1) !important;
-        backdrop-filter: var(--blur-md);
-        border-radius: 12px !important;
-        border: 1px solid rgba(255, 255, 255, 0.1) !important;
-        padding: var(--space-3) !important;
-        max-width: 300px !important;
-        box-shadow: var(--shadow-md) !important;
+    /* ===== UTILITY CLASSES ===== */
+    .text-gradient {{
+        background: linear-gradient(135deg, var(--color-primary-500), var(--color-accent-500));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
     }}
     
-    .map-tooltip h3 {{
-        color: var(--color-primary-500) !important;
-        margin-bottom: var(--space-1) !important;
-        font-size: var(--font-heading-md) !important;
-    }}
-    
-    .map-tooltip p {{
-        color: var(--color-text-secondary) !important;
-        margin-bottom: var(--space-1) !important;
-        font-size: var(--font-body-sm) !important;
+    .border-gradient {{
+        border: double 2px transparent;
+        background-image: linear-gradient(var(--color-surface-1), var(--color-surface-1)), 
+                          linear-gradient(135deg, var(--color-primary-500), var(--color-accent-500));
+        background-origin: border-box;
+        background-clip: padding-box, border-box;
     }}
     </style>
     """, unsafe_allow_html=True)
 
 # ====================
-# 3. DATA MANAGEMENT
+# 3. SIMPLIFIED DATA MANAGEMENT
 # ====================
 
 @st.cache_data
 def load_branch_data() -> pd.DataFrame:
-    """Load and cache branch data with validation."""
+    """Load optimized branch data."""
     data = pd.DataFrame({
         "Branch": ["PANATHUR", "BELLANDUR", "BELLANDUR", "PANATHUR", "BRIGADE METROPOLIS"],
         "IFSC_Code": ["SBIN0017040", "SBIN0015647", "SBIN0041171", "SBIN0016877", "SBIN0015034"],
@@ -387,57 +481,44 @@ def load_branch_data() -> pd.DataFrame:
             "SBI BANK,MS BRIGADE ENTERPRISES, WHITEFIELD ROAD"
         ],
         "City": ["BANGALORE"] * 5,
-        "State": ["KARNATAKA"] * 5,
         "Pincode": ["560037", "560035", "560103", "560071", "560016"],
-        "Country": ["India"] * 5,
         "Latitude": [12.9382107, 12.9188658, 12.9246927, 12.9534312, 12.9927608],
-        "Longitude": [77.6992385, 77.6700914, 77.672937, 77.6406167, 77.7021471]
+        "Longitude": [77.6992385, 77.6700914, 77.672937, 77.6406167, 77.7021471],
+        "Performance_Score": [0.85, 0.92, 0.78, 0.88, 0.95]
     })
-    
-    # Add derived columns for visualization
-    data['Branch_Size'] = [100, 150, 120, 130, 200]  # Mock data for visualization
-    data['Performance_Score'] = [0.8, 0.9, 0.7, 0.85, 0.95]  # Mock performance scores
-    
     return data
 
-def get_color_by_performance(score: float) -> list:
-    """Get RGBA color based on performance score."""
-    if score >= 0.9:
-        return [16, 185, 129, 220]  # Success green
-    elif score >= 0.7:
-        return[245, 158, 11, 200]   # Warning orange
-    else:
-        return [239, 68, 68, 180]   # Danger red
-
 # ====================
-# 4. 3D MAP VISUALIZATION
+# 4. ENHANCED 3D MAP VISUALIZATION
 # ====================
 
 def create_3d_icon_layer(data: pd.DataFrame, selected_branch: Optional[str] = None) -> pdk.Layer:
-    """
-    Create a 3D icon layer with animated pins instead of extruded columns.
-    Uses IconLayer with 3D perspective effects.
-    """
-    # Convert performance scores to colors
-    colors = data['Performance_Score'].apply(get_color_by_performance).tolist()
+    """Create elegant 3D icon layer with color theory."""
+    # Performance-based colors
+    colors = []
+    for score in data['Performance_Score']:
+        if score >= 0.9:
+            colors.append([16, 185, 129, 230])  # Emerald
+        elif score >= 0.8:
+            colors.append([59, 130, 246, 210])  # Blue
+        elif score >= 0.7:
+            colors.append([245, 158, 11, 190])  # Amber
+        else:
+            colors.append([239, 68, 68, 170])   # Red
     
-    # Create icon mapping (using 3D pin icon)
     ICON_DATA = {
-        "url": "https://cdn-icons-png.flaticon.com/512/684/684908.png",  # 3D pin icon
+        "url": "https://cdn-icons-png.flaticon.com/512/684/684908.png",
         "width": 128,
         "height": 128,
         "anchorY": 128
     }
     
+    data = data.copy()
     data['icon_data'] = [ICON_DATA] * len(data)
+    data['icon_size'] = 1.0
     
-    # Highlight selected branch with larger icon
     if selected_branch and selected_branch != 'All Branches':
-        selected_mask = data['Branch'] == selected_branch
-        data.loc[selected_mask, 'icon_size'] = 2.0
-        data.loc[~selected_mask, 'icon_size'] = 1.0
-    else:
-        data['icon_size'] = 1.0
+        data.loc[data['Branch'] == selected_branch, 'icon_size'] = 1.8
     
     return pdk.Layer(
         "IconLayer",
@@ -447,355 +528,252 @@ def create_3d_icon_layer(data: pd.DataFrame, selected_branch: Optional[str] = No
         get_position=['Longitude', 'Latitude'],
         pickable=True,
         auto_highlight=True,
-        highlight_color=[255, 255, 255, 100],
-        size_scale=15,
+        highlight_color=[255, 255, 255, 150],
+        size_scale=18,
         get_color=colors,
-        transitions={
-            'get_size': 900,
-            'get_color': 900,
-            'get_position': 900
-        }
+        transitions={'get_size': 800, 'get_color': 800}
     )
-def create_pulsing_layer(data: pd.DataFrame, selected_branch: Optional[str] = None) -> Optional[pdk.Layer]:
-    """Create a pulsing ring layer for the selected branch."""
-    if not selected_branch or selected_branch == 'All Branches':
-        return None
 
-    # Create a copy of the filtered data to avoid warnings
-    selected_data = data[data['Branch'] == selected_branch].copy()
-    if len(selected_data) == 0:
-        return None
-
-    # FIX: Assign a scalar value (100) to all rows in the new column
-    selected_data['radius'] = 100  # Initial radius in meters
-
-    return pdk.Layer(
-        "ScatterplotLayer",
-        data=selected_data,
-        get_position=['Longitude', 'Latitude'],
-        get_radius='radius',
-        get_fill_color=[0, 180, 219, 80],
-        pickable=False,
-        stroked=True,
-        get_line_color=[0, 180, 219, 150],
-        get_line_width=2,
-        line_width_min_pixels=1,
-        radius_min_pixels=20,
-        radius_max_pixels=60,
-        transitions={
-            'get_radius': 2000,
-            'get_fill_color': 2000
-        }
-    )
 def create_map_view(data: pd.DataFrame, selected_branch: Optional[str] = None,
                    pitch: int = 50, zoom: int = 11, bearing: int = 0) -> pdk.Deck:
-    """Create the 3D map visualization with multiple layers."""
-    layers = []
+    """Create immersive 3D map with rotation controls."""
+    layers = [create_3d_icon_layer(data, selected_branch)]
     
-    # Add 3D icon layer for all branches
-    layers.append(create_3d_icon_layer(data, selected_branch))
-    
-    # Add pulsing ring for selected branch
-    pulsing_layer = create_pulsing_layer(data, selected_branch)
-    if pulsing_layer:
-        layers.append(pulsing_layer)
-    
-    # Set view state based on selection
+    # Calculate view state
     if selected_branch and selected_branch != 'All Branches':
-        selected_data = data[data['Branch'] == selected_branch]
-        if len(selected_data) > 0:
-            lat = selected_data['Latitude'].iloc[0]
-            lon = selected_data['Longitude'].iloc[0]
+        selected = data[data['Branch'] == selected_branch]
+        if len(selected) > 0:
+            lat, lon = selected[['Latitude', 'Longitude']].iloc[0]
             zoom = 14
         else:
-            lat = data['Latitude'].mean()
-            lon = data['Longitude'].mean()
+            lat, lon = data[['Latitude', 'Longitude']].mean()
     else:
-        lat = data['Latitude'].mean()
-        lon = data['Longitude'].mean()
+        lat, lon = data[['Latitude', 'Longitude']].mean()
     
     view_state = pdk.ViewState(
-        latitude=lat,
-        longitude=lon,
+        latitude=float(lat),
+        longitude=float(lon),
         zoom=zoom,
         pitch=pitch,
-        bearing=bearing,
-        max_zoom=20,
-        min_zoom=5,
-        controller=True
+        bearing=bearing
     )
     
-    # Map style configuration
-    map_style = st.session_state.get('map_style', 'dark')
-    map_styles = {
-        'dark': 'dark',
-        'light': 'light',
-        'satellite': 'satellite',
-        'road': 'road'
-    }
-    
-    # Tooltip configuration
-    tooltip_config = {
-        "html": """
-        <div class="map-tooltip">
-            <h3>{Branch}</h3>
-            <p><strong>IFSC:</strong> {IFSC_Code}</p>
-            <p><strong>Address:</strong> {Address}</p>
-            <p><strong>Pincode:</strong> {Pincode}</p>
-            <p><strong>Performance:</strong> {Performance_Score:.0%}</p>
-        </div>
-        """,
-        "style": {
-            "backgroundColor": SURFACE_1,
-            "color": TOKENS["color"]["semantic"]["text"]["primary"],
-            "borderRadius": "12px",
-            "padding": "16px",
-            "backdropFilter": "blur(8px)",
-            "border": "1px solid rgba(255, 255, 255, 0.1)",
-            "maxWidth": "300px"
-        }
-    }
-    
-    # Create deck - without controller parameter
     return pdk.Deck(
         layers=layers,
         initial_view_state=view_state,
-        map_style=map_styles.get(map_style, 'dark'),
-        tooltip=tooltip_config,
+        map_style='dark' if CURRENT_THEME == 'dark' else 'light',
+        tooltip={
+            "html": """
+            <div class="map-tooltip">
+                <h3>{Branch}</h3>
+                <p><strong>IFSC:</strong> {IFSC_Code}</p>
+                <p><strong>Area:</strong> {Address.split(',')[0]}</p>
+                <p><strong>Pincode:</strong> {Pincode}</p>
+                <p><strong>Performance:</strong> <span style="color:{'#10b981' if Performance_Score >= 0.8 else '#f59e0b'}">{Performance_Score:.0%}</span></p>
+            </div>
+            """,
+            "style": {
+                "backgroundColor": THEME_TOKENS.get("surface", {}).get("1", "#1a1a1a"),
+                "color": THEME_TOKENS.get("text", {}).get("primary", "#fafafa")
+            }
+        },
         width="100%",
-        height=600
-    )# ====================
-# 5. DASHBOARD COMPONENTS
-# ====================
-
-def render_metric_cards(data: pd.DataFrame):
-    """Render animated metric cards with micro-interactions."""
-    col1, col2, col3, col4 = st.columns(4)
-    
-    with col1:
-        st.metric(
-            label="Total Branches",
-            value=len(data),
-            delta=f"+{len(data)} locations",
-            delta_color="normal"
-        )
-    
-    with col2:
-        st.metric(
-            label="Cities Covered",
-            value=data['City'].nunique(),
-            delta="1 City",
-            delta_color="normal"
-        )
-    
-    with col3:
-        avg_perf = data['Performance_Score'].mean()
-        st.metric(
-            label="Avg Performance",
-            value=f"{avg_perf:.1%}",
-            delta=f"+{avg_perf:.1%}",
-            delta_color="normal"
-        )
-    
-    with col4:
-        st.metric(
-            label="Total Coverage (km²)",
-            value="45.2",
-            delta="+5.3 km²",
-            delta_color="normal"
-        )
-
-def render_branch_table(data: pd.DataFrame):
-    """Render interactive branch details table."""
-    st.markdown("### 📋 Branch Network Details")
-    
-    # Custom column configuration for better UX
-    column_config = {
-        "Branch": st.column_config.TextColumn("Branch Name", width="medium"),
-        "IFSC_Code": st.column_config.TextColumn("IFSC Code", width="large"),
-        "Address": st.column_config.TextColumn("Full Address", width="large"),
-        "Performance_Score": st.column_config.ProgressColumn(
-            "Performance",
-            help="Branch performance score",
-            format="%.0%",
-            min_value=0,
-            max_value=1
-        ),
-        "Latitude": st.column_config.NumberColumn("Latitude", format="%.6f"),
-        "Longitude": st.column_config.NumberColumn("Longitude", format="%.6f"),
-    }
-    
-    return st.data_editor(
-        data,
-        column_config=column_config,
-        use_container_width=True,
-        hide_index=True,
-        num_rows="dynamic",
-        key="branch_table"
+        height=550
     )
 
 # ====================
-# 6. MAIN APPLICATION
+# 5. REFINED DASHBOARD COMPONENTS
 # ====================
 
+def render_minimal_metrics(data: pd.DataFrame):
+    """Render elegant, minimal metric cards."""
+    col1, col2, col3 = st.columns(3)
+    
+    with col1:
+        with st.container():
+            st.markdown("####  **Network**")
+            st.markdown(f"### {len(data)}")
+            st.caption("Total Branches")
+    
+    with col2:
+        with st.container():
+            st.markdown("####  **Coverage**")
+            st.markdown(f"### {data['City'].nunique()}")
+            st.caption("Cities")
+    
+    with col3:
+        with st.container():
+            st.markdown("####  **Performance**")
+            avg_perf = data['Performance_Score'].mean()
+            st.markdown(f"### {avg_perf:.1%}")
+            st.caption("Average Score")
+
+def render_simplified_table(data: pd.DataFrame):
+    """Render clean, focused data table."""
+    # Show only essential columns
+    display_data = data[['Branch', 'IFSC_Code', 'City', 'Pincode', 'Performance_Score']].copy()
+    display_data['Performance'] = display_data['Performance_Score'].apply(
+        lambda x: f"{x:.0%}"
+    )
+    
+    column_config = {
+        "Branch": st.column_config.TextColumn("Branch", width="medium"),
+        "IFSC_Code": st.column_config.TextColumn("IFSC", width="medium"),
+        "City": st.column_config.TextColumn("City", width="small"),
+        "Pincode": st.column_config.TextColumn("Pincode", width="small"),
+        "Performance": st.column_config.ProgressColumn(
+            "Performance",
+            format="%f",
+            min_value=0,
+            max_value=1,
+            width="medium"
+        )
+    }
+    
+    st.dataframe(
+        display_data[['Branch', 'IFSC_Code', 'City', 'Pincode', 'Performance']],
+        column_config=column_config,
+        use_container_width=True,
+        hide_index=True
+    )
+
 # ====================
-# 6. MAIN APPLICATION
+# 6. REFINED MAIN APPLICATION
 # ====================
 
 def main():
-    """Main application entry point."""
+    """Main application with refined UI."""
+    
+    # Initialize theme
+    if 'theme' not in st.session_state:
+        st.session_state.theme = 'dark'
     
     # Inject design system
-    inject_design_system()
-    
-    # Initialize session state
-    if 'map_style' not in st.session_state:
-        st.session_state.map_style = 'dark'
-    # Remove this line - let the toggle widget handle it:
-    # if 'reduce_motion' not in st.session_state:
-    #     st.session_state.reduce_motion = False
+    inject_enhanced_design_system(st.session_state.theme)
     
     # Load data
     data = load_branch_data()
     
-    # ===== HEADER SECTION =====
-    st.markdown(f"""
-    <div class="fade-in-up">
-        <h1> SBI Bank Network Intelligence</h1>
-        <p class="body-text">Enterprise-grade 3D visualization dashboard for strategic branch network analysis</p>
+    # ===== ELEGANT HEADER =====
+    st.markdown("""
+    <div class="animate-fade-up" style="margin-bottom: 3rem;">
+        <h1> SBI Network Intelligence</h1>
+        <p style="color: var(--color-text-secondary); font-size: 1.1rem; margin-top: 0.5rem;">
+            Immersive 3D visualization of branch network performance
+        </p>
     </div>
     """, unsafe_allow_html=True)
     
-    # ===== SIDEBAR CONTROLS =====
+    # ===== REFINED SIDEBAR =====
     with st.sidebar:
         st.markdown(f"""
-        <div style="text-align: center; margin-bottom: 32px;">
-            <div style="font-size: 24px; font-weight: 800; color: {PRIMARY_500}; margin-bottom: 8px;">
-                SBI DASHBOARD
+        <div style="text-align: center; margin-bottom: 2.5rem;">
+            <div style="
+                font-size: 1.5rem;
+                font-weight: 700;
+                background: linear-gradient(135deg, var(--color-primary-500), var(--color-accent-500));
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                margin-bottom: 0.5rem;
+            ">
+                SBI 3D
             </div>
-            <div class="caption">Enterprise Control Panel</div>
+            <div style="color: var(--color-text-tertiary); font-size: 0.875rem;">
+                Interactive Dashboard
+            </div>
         </div>
         """, unsafe_allow_html=True)
         
-        # Branch Selector
-        selected_branch = st.selectbox(
-            " Focus on Branch",
-            options=['All Branches'] + list(data['Branch'].unique()),
-            help="Select a branch to zoom and highlight on the map",
-            key="branch_selector"
-        )
-        
-        st.divider()
-        
-        # Map Controls
-        st.markdown("### 🗺️ Map Controls")
-        
-        col1, col2 = st.columns(2)
-        with col1:
-            map_pitch = st.slider(
-                "3D Tilt",
-                min_value=0,
-                max_value=60,
-                value=45,
-                help="Adjust the 3D perspective angle",
-                key="map_pitch"
-            )
-        
-        with col2:
-            map_zoom = st.slider(
-                "Zoom Level",
-                min_value=5,
-                max_value=20,
-                value=11,
-                help="Adjust map zoom level",
-                key="map_zoom"
-            )
-        
-        # Map Style Selector
-        st.session_state.map_style = st.selectbox(
-            "Basemap Style",
-            options=["Dark", "Light", "Satellite", "Road"],
-            index=0,
-            help="Choose the base map style",
-            key="map_style_selector"
+        # Theme Toggle
+        st.session_state.theme = st.radio(
+            "Theme",
+            ["Dark", "Light"],
+            horizontal=True,
+            label_visibility="collapsed"
         ).lower()
         
         st.divider()
         
-        # Animation Controls - FIXED SECTION
-        st.markdown("###  Animation")
+        # Map Controls
+        st.markdown("####  **Controls**")
+        
+        selected_branch = st.selectbox(
+            "Branch Focus",
+            ['All Branches'] + sorted(data['Branch'].unique()),
+            key="branch_select"
+        )
         
         col1, col2 = st.columns(2)
         with col1:
-            show_pulse = st.toggle(
-                "Pulse Effect",
-                value=True,
-                help="Show pulsing ring on selected branch",
-                key="show_pulse"
-            )
-        
+            map_pitch = st.slider("Tilt", 0, 60, 45)
         with col2:
-            # CORRECT: Let Streamlit manage the session state via the key
-            reduce_motion = st.toggle(
-                "Reduce Motion",
-                value=False,
-                help="Reduce animations for accessibility",
-                key="reduce_motion"
-            )
+            map_zoom = st.slider("Zoom", 5, 20, 11)
         
-        # Performance Info
+        map_style = st.selectbox(
+            "Map Style",
+            ["Dark", "Light", "Satellite"],
+            index=0 if st.session_state.theme == 'dark' else 1
+        )
+        
         st.divider()
-        st.markdown("###  Performance")
-        st.caption(f"Data Points: {len(data)} branches")
-        st.caption(f"Last Updated: {datetime.now().strftime('%Y-%m-%d %H:%M')}")
+        
+        # Visual Effects
+        st.markdown("####  **Effects**")
+        show_animations = st.toggle("Animations", True)
+        
+        st.divider()
+        
+        # Info
+        st.caption(f"**Data:** {len(data)} locations")
+        st.caption(f"**Updated:** {datetime.now().strftime('%b %d, %Y')}")
     
-    # ===== MAIN CONTENT AREA =====
+    # ===== MAIN CONTENT =====
     
-    # Metric Cards
-    st.markdown("###  Network Overview")
-    render_metric_cards(data)
+    # Minimal Metrics
+    render_minimal_metrics(data)
     
     st.divider()
     
-    # 3D Map Visualization
-    st.markdown("###  Interactive 3D Network Map")
+    # 3D Map
+    st.markdown("####  **Interactive 3D Map**")
+    st.caption("Hold Shift + drag to rotate • Scroll to zoom • Click pins for details")
     
-    # Create and display the map
     deck = create_map_view(
         data=data,
         selected_branch=selected_branch,
         pitch=map_pitch,
         zoom=map_zoom
     )
-    
     st.pydeck_chart(deck, use_container_width=True)
     
-    # Map Controls Footer
-    col1, col2, col3 = st.columns([2, 1, 1])
-    with col1:
-        st.caption(" Tip: Click on any branch pin to view detailed information")
+    # Map Controls
+    col1, col2 = st.columns([3, 1])
     with col2:
         if st.button(" Reset View", use_container_width=True):
             st.rerun()
-    with col3:
-        if st.button(" Export View", use_container_width=True):
-            st.success("Export functionality would be implemented here")
     
     st.divider()
     
-    # Branch Details Table
-    edited_data = render_branch_table(data)
+    # Simplified Data
+    st.markdown("####  **Branch Details**")
+    render_simplified_table(data)
     
-    # Footer
-    st.divider()
+    # Elegant Footer
     st.markdown("""
-    <div style="text-align: center; padding: 24px 0;">
-        <p class="caption">SBI Bank Enterprise Dashboard v1.0 • Secure • Production Ready</p>
-        <p class="body-text" style="font-size: 0.75rem; color: var(--color-muted);">
-            This dashboard complies with WCAG AA accessibility standards. 
-            Performance optimized for datasets up to 10,000 branches.
-        </p>
+    <div style="
+        text-align: center;
+        margin-top: 3rem;
+        padding-top: 2rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+        color: var(--color-text-tertiary);
+        font-size: 0.875rem;
+    ">
+        <div>SBI Network Intelligence Dashboard v2.0</div>
+        <div style="margin-top: 0.5rem; font-size: 0.75rem;">
+            Professional 3D Visualization • Color Theory Design System
+        </div>
     </div>
     """, unsafe_allow_html=True)
+
 if __name__ == "__main__":
     main()
