@@ -318,7 +318,7 @@ def load_branch_data() -> pd.DataFrame:
     })
 
     # Branch scale / visual size for icons (kept as a mock but harmless)
-    data["Branch_Size"] = [90, 150, 120, 110, 200]
+    # data["Branch_Size"] = [90, 150, 120, 110, 200]
     return data
 
 
@@ -448,13 +448,11 @@ def create_map_view(data: pd.DataFrame, selected_branch: Optional[str] = None, p
 # ====================
 
 def render_metric_cards(data: pd.DataFrame):
-    """Render a set of custom-styled metric cards (pure Streamlit components inside styled container)."""
-    col1, col2, col3, col4 = st.columns(4, gap="large")
+    """Render custom-styled metric cards."""
+    col1, col2 = st.columns(2, gap="large")  # only 2 columns now
 
-    avg_branch_size = int(data["Branch_Size"].mean())
     total_branches = len(data)
     cities = data["City"].nunique()
-    coverage = "45.2"  # placeholder
 
     with col1:
         st.markdown(f"""
@@ -472,22 +470,6 @@ def render_metric_cards(data: pd.DataFrame):
             </div>
             """, unsafe_allow_html=True)
 
-    with col3:
-        st.markdown(f"""
-            <div class="metric-card">
-                <div class="metric-label">Avg Branch Size</div>
-                <div class="metric-value">{avg_branch_size}</div>
-            </div>
-            """, unsafe_allow_html=True)
-
-    with col4:
-        st.markdown(f"""
-            <div class="metric-card">
-                <div class="metric-label">Total Coverage (km²)</div>
-                <div class="metric-value">{coverage}</div>
-            </div>
-            """, unsafe_allow_html=True)
-
 
 def render_branch_table(data: pd.DataFrame):
     """Render an interactive branch table without performance column."""
@@ -499,7 +481,6 @@ def render_branch_table(data: pd.DataFrame):
         "Address": st.column_config.TextColumn("Full Address", width="large"),
         "Latitude": st.column_config.NumberColumn("Latitude", format="%.6f"),
         "Longitude": st.column_config.NumberColumn("Longitude", format="%.6f"),
-        "Branch_Size": st.column_config.NumberColumn("Relative Size")
     }
 
     return st.data_editor(data, column_config=column_config, use_container_width=True, hide_index=True, num_rows="dynamic", key="branch_table")
