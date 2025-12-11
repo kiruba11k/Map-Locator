@@ -52,7 +52,7 @@ def inject_design_system():
     /* ===== CSS CUSTOM PROPERTIES (TOKENS) ===== */
     :root {{
         /* Color Tokens - Primary */
-        --color-primary-50: {TOKENS["color"]["primary"]["50"]};
+        --color-primary-50: {TOKENS.get("color", {}).get("primary", {}).get("50", "#e6f7ff")};
         --color-primary-500: {PRIMARY_500};
         --color-primary-700: {PRIMARY_700};
         
