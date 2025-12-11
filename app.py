@@ -533,52 +533,37 @@ def create_map_view(data: pd.DataFrame, selected_branch: Optional[str] = None,
         'road': 'road'
     }
     
+    # Tooltip configuration
+    tooltip_config = {
+        "html": """
+        <div class="map-tooltip">
+            <h3>{Branch}</h3>
+            <p><strong>IFSC:</strong> {IFSC_Code}</p>
+            <p><strong>Address:</strong> {Address}</p>
+            <p><strong>Pincode:</strong> {Pincode}</p>
+            <p><strong>Performance:</strong> {Performance_Score:.0%}</p>
+        </div>
+        """,
+        "style": {
+            "backgroundColor": SURFACE_1,
+            "color": TOKENS["color"]["semantic"]["text"]["primary"],
+            "borderRadius": "12px",
+            "padding": "16px",
+            "backdropFilter": "blur(8px)",
+            "border": "1px solid rgba(255, 255, 255, 0.1)",
+            "maxWidth": "300px"
+        }
+    }
+    
+    # Create deck - without controller parameter
     return pdk.Deck(
         layers=layers,
         initial_view_state=view_state,
         map_style=map_styles.get(map_style, 'dark'),
-        tooltip={
-            "html": """
-            <div class="map-tooltip">
-                <h3>{Branch}</h3>
-                <p><strong>IFSC:</strong> {IFSC_Code}</p>
-                <p><strong>Address:</strong> {Address}</p>
-                <p><strong>Pincode:</strong> {Pincode}</p>
-                <p><strong>Performance:</strong> {Performance_Score:.0%}</p>
-            </div>
-            """,
-            "style": {
-                "backgroundColor": SURFACE_1,
-                "color": TOKENS["color"]["semantic"]["text"]["primary"],
-                "borderRadius": "12px",
-                "padding": "16px",
-                "backdropFilter": "blur(8px)",
-                "border": "1px solid rgba(255, 255, 255, 0.1)",
-                "maxWidth": "300px"
-            }
-        },
-        # Performance optimizations
+        tooltip=tooltip_config,
         width="100%",
-        height=600,
-        controller=True,
-        effects=[{
-            "@@type": "lightingEffect",
-            "shadowColor": [0, 0, 0, 0.5],
-            "ambientLight": {
-                "@@type": "ambientLight",
-                "color": [255, 255, 255],
-                "intensity": 1.0
-            },
-            "directionalLight": {
-                "@@type": "directionalLight",
-                "color": [255, 255, 255],
-                "intensity": 2.0,
-                "direction": [1, 1, -1]
-            }
-        }]
-    )
-
-# ====================
+        height=600
+    )# ====================
 # 5. DASHBOARD COMPONENTS
 # ====================
 
