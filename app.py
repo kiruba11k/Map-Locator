@@ -13,20 +13,61 @@ from typing import Optional, Dict, Any
 
 @st.cache_resource
 def load_design_tokens() -> Dict[str, Any]:
-    """Load and cache design tokens from JSON file."""
+    """Load design tokens with safe defaults if file is missing."""
     try:
-        with open('theme_tokens.json', 'r') as f:
-            return json.load(f)
-    except FileNotFoundError:
-        # Fallback tokens if file doesn't exist
+        # Try to load from theme_tokens.json
+        if os.path.exists('theme_tokens.json'):
+            with open('theme_tokens.json', 'r') as f:
+                tokens = json.load(f)
+                st.success("Design tokens loaded from theme_tokens.json")
+        else:
+            # Create a default tokens structure if file doesn't exist
+            tokens = {
+                "color": {
+                    "primary": {
+                        "50": "#e6f7ff",
+                        "100": "#b3e6ff", 
+                        "200": "#80d4ff",
+                        "300": "#4dc3ff",
+                        "400": "#1ab1ff",
+                        "500": "#00b4db",
+                        "600": "#0099bc",
+                        "700": "#0083b0",
+                        "800": "#006d94", 
+                        "900": "#005778"
+                    },
+                    "surface": {
+                        "0": "#0f2027",
+                        "1": "#142632",
+                        "2": "#1a2c3a",
+                        "3": "#203244"
+                    },
+                    "semantic": {
+                        "success": "#10b981",
+                        "warning": "#f59e0b",
+                        "danger": "#ef4444",
+                        "muted": "rgba(255, 255, 255, 0.6)",
+                        "text": {
+                            "primary": "rgba(255, 255, 255, 0.95)",
+                            "secondary": "rgba(255, 255, 255, 0.7)",
+                            "tertiary": "rgba(255, 255, 255, 0.5)"
+                        }
+                    }
+                }
+            }
+            st.warning(" Using default design tokens. Create theme_tokens.json for customization.")
+        
+        return tokens
+        
+    except json.JSONDecodeError as e:
+        st.error(f" Error parsing theme_tokens.json: {e}")
+        # Return minimal tokens to keep app running
         return {
             "color": {
                 "primary": {"500": "#00b4db", "700": "#0083b0"},
-                "surface": {"0": "#0f2027", "1": "#142632"},
-                "semantic": {"text": {"primary": "#ffffff"}}
+                "surface": {"0": "#0f2027", "1": "#142632"}
             }
         }
-
 # Initialize
 TOKENS = load_design_tokens()
 PRIMARY_500 = TOKENS["color"]["primary"]["500"]
@@ -44,6 +85,21 @@ st.set_page_config(
 # ====================
 # 2. DESIGN SYSTEM & STYLING
 # ====================
+def get_token(tokens: Dict[str, Any], path: str, default: Any = None) -> Any:
+    """
+    Safely get a token from nested dictionary using dot notation.
+    Example: get_token(TOKENS, "color.primary.500")
+    """
+    keys = path.split('.')
+    current = tokens
+    
+    for key in keys:
+        if isinstance(current, dict) and key in current:
+            current = current[key]
+        else:
+            return default
+    
+    return current
 
 def inject_design_system():
     """Inject comprehensive CSS design system with tokens."""
