@@ -652,6 +652,10 @@ def render_branch_table(data: pd.DataFrame):
 # 6. MAIN APPLICATION
 # ====================
 
+# ====================
+# 6. MAIN APPLICATION
+# ====================
+
 def main():
     """Main application entry point."""
     
@@ -661,8 +665,9 @@ def main():
     # Initialize session state
     if 'map_style' not in st.session_state:
         st.session_state.map_style = 'dark'
-    if 'reduce_motion' not in st.session_state:
-        st.session_state.reduce_motion = False
+    # Remove this line - let the toggle widget handle it:
+    # if 'reduce_motion' not in st.session_state:
+    #     st.session_state.reduce_motion = False
     
     # Load data
     data = load_branch_data()
@@ -670,7 +675,7 @@ def main():
     # ===== HEADER SECTION =====
     st.markdown(f"""
     <div class="fade-in-up">
-        <h1>SBI Bank Network Intelligence</h1>
+        <h1> SBI Bank Network Intelligence</h1>
         <p class="body-text">Enterprise-grade 3D visualization dashboard for strategic branch network analysis</p>
     </div>
     """, unsafe_allow_html=True)
@@ -688,7 +693,7 @@ def main():
         
         # Branch Selector
         selected_branch = st.selectbox(
-            "📍 Focus on Branch",
+            " Focus on Branch",
             options=['All Branches'] + list(data['Branch'].unique()),
             help="Select a branch to zoom and highlight on the map",
             key="branch_selector"
@@ -697,7 +702,7 @@ def main():
         st.divider()
         
         # Map Controls
-        st.markdown("###  Map Controls")
+        st.markdown("### 🗺️ Map Controls")
         
         col1, col2 = st.columns(2)
         with col1:
@@ -731,7 +736,7 @@ def main():
         
         st.divider()
         
-        # Animation Controls
+        # Animation Controls - FIXED SECTION
         st.markdown("###  Animation")
         
         col1, col2 = st.columns(2)
@@ -744,7 +749,8 @@ def main():
             )
         
         with col2:
-            st.session_state.reduce_motion = st.toggle(
+            # CORRECT: Let Streamlit manage the session state via the key
+            reduce_motion = st.toggle(
                 "Reduce Motion",
                 value=False,
                 help="Reduce animations for accessibility",
@@ -753,7 +759,7 @@ def main():
         
         # Performance Info
         st.divider()
-        st.markdown("### Performance")
+        st.markdown("###  Performance")
         st.caption(f"Data Points: {len(data)} branches")
         st.caption(f"Last Updated: {datetime.now().strftime('%Y-%m-%d %H:%M')}")
     
@@ -805,10 +811,5 @@ def main():
         </p>
     </div>
     """, unsafe_allow_html=True)
-
-# ====================
-# 7. ENTRY POINT
-# ====================
-
 if __name__ == "__main__":
     main()
