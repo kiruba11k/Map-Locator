@@ -10,6 +10,24 @@ import os
 # ====================
 # 1. INITIALIZATION & CONFIG
 # ====================
+TOKENS.setdefault("typography", {
+    "display": {"xl": "3rem"},
+    "heading": {"lg": "1.75rem"},
+    "body": {"md": "1rem"},
+    "caption": "0.75rem",
+    "lineHeight": {"tight": "1.1", "normal": "1.4", "relaxed": "1.6"},
+    "letterSpacing": {"tight": "-0.5px", "normal": "0px", "wide": "1px"}
+})
+
+TOKENS.setdefault("spacing", {"base": "8px"})
+TOKENS.setdefault("animation", {
+    "duration": {"normal": "0.3s"},
+    "easing": {"standard": "ease-in-out"}
+})
+TOKENS.setdefault("elevation", {
+    "shadow": {"md": "0px 4px 12px rgba(0,0,0,0.3)", "lg": "0px 8px 24px rgba(0,0,0,0.4)"},
+    "blur": {"md": "10px"}
+})
 
 @st.cache_resource
 def load_design_tokens() -> Dict[str, Any]:
@@ -395,19 +413,19 @@ def load_branch_data() -> pd.DataFrame:
     })
     
     # Add derived columns for visualization
-    data['Branch_Size'] = [100, 150, 120, 130, 200]  # Mock data for visualization
-    data['Performance_Score'] = [0.8, 0.9, 0.7, 0.85, 0.95]  # Mock performance scores
+    # data['Branch_Size'] = [100, 150, 120, 130, 200]  # Mock data for visualization
+    # data['Performance_Score'] = [0.8, 0.9, 0.7, 0.85, 0.95]  # Mock performance scores
     
     return data
 
-def get_color_by_performance(score: float) -> list:
-    """Get RGBA color based on performance score."""
-    if score >= 0.9:
-        return [16, 185, 129, 220]  # Success green
-    elif score >= 0.7:
-        return[245, 158, 11, 200]   # Warning orange
-    else:
-        return [239, 68, 68, 180]   # Danger red
+# def get_color_by_performance(score: float) -> list:
+#     """Get RGBA color based on performance score."""
+#     if score >= 0.9:
+#         return [16, 185, 129, 220]  # Success green
+#     elif score >= 0.7:
+#         return[245, 158, 11, 200]   # Warning orange
+#     else:
+#         return [239, 68, 68, 180]   # Danger red
 
 # ====================
 # 4. 3D MAP VISUALIZATION
@@ -607,7 +625,7 @@ def render_metric_cards(data: pd.DataFrame):
 
 def render_branch_table(data: pd.DataFrame):
     """Render interactive branch details table."""
-    st.markdown("### 📋 Branch Network Details")
+    st.markdown("### Branch Network Details")
     
     # Custom column configuration for better UX
     column_config = {
@@ -688,7 +706,7 @@ def main():
         st.divider()
         
         # Map Controls
-        st.markdown("### 🗺️ Map Controls")
+        st.markdown("###  Map Controls")
         
         col1, col2 = st.columns(2)
         with col1:
