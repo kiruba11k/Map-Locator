@@ -456,18 +456,19 @@ def create_3d_icon_layer(data: pd.DataFrame, selected_branch: Optional[str] = No
             'get_position': 900
         }
     )
-
 def create_pulsing_layer(data: pd.DataFrame, selected_branch: Optional[str] = None) -> Optional[pdk.Layer]:
     """Create a pulsing ring layer for the selected branch."""
     if not selected_branch or selected_branch == 'All Branches':
         return None
-    
+
+    # Create a copy of the filtered data to avoid warnings
     selected_data = data[data['Branch'] == selected_branch].copy()
     if len(selected_data) == 0:
         return None
-    
-    selected_data['radius'] = [100]  # Initial radius in meters
-    
+
+    # FIX: Assign a scalar value (100) to all rows in the new column
+    selected_data['radius'] = 100  # Initial radius in meters
+
     return pdk.Layer(
         "ScatterplotLayer",
         data=selected_data,
@@ -486,9 +487,8 @@ def create_pulsing_layer(data: pd.DataFrame, selected_branch: Optional[str] = No
             'get_fill_color': 2000
         }
     )
-
-def create_map_view(data: pd.DataFrame, selected_branch: Optional[str] = None, 
-                   pitch: int = 50, zoom: int = 11) -> pdk.Deck:
+def create_map_view(data: pd.DataFrame, selected_branch: Optional[str] = None,
+                   pitch: int = 50, zoom: int = 11, bearing: int = 0) -> pdk.Deck:
     """Create the 3D map visualization with multiple layers."""
     layers = []
     
@@ -519,9 +519,10 @@ def create_map_view(data: pd.DataFrame, selected_branch: Optional[str] = None,
         longitude=lon,
         zoom=zoom,
         pitch=pitch,
-        bearing=0,
+        bearing=bearing,
         max_zoom=20,
-        min_zoom=5
+        min_zoom=5,
+        bearing=bearing
     )
     
     # Map style configuration
