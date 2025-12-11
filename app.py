@@ -522,7 +522,7 @@ def create_map_view(data: pd.DataFrame, selected_branch: Optional[str] = None,
         bearing=bearing,
         max_zoom=20,
         min_zoom=5,
-        bearing=bearing
+        controller=True
     )
     
     # Map style configuration
