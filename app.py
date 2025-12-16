@@ -802,8 +802,8 @@ def main():
                         else:
                             all_types.append(str(type_list))
                     unique_types = len(set(all_types))
-else:
-    unique_types = 0
+                else:
+                    unique_types = 0
                 
                 st.metric("Unique Types", unique_types)
             with col3:
