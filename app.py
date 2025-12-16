@@ -756,7 +756,7 @@ def main():
                 if results:
                     df_results = pd.DataFrame(results)
                     df_results['source_branch'] = 'Manual Search'
-                    df_results = clean_poi_data(df_results
+                    df_results = clean_poi_data(df_results)
                     st.session_state.poi_results = df_results
                     
                     # Add to history
