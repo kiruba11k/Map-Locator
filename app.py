@@ -96,7 +96,7 @@ def search_poi_apify(query: str, lat: float, lng: float, max_items: int = 50,
                 timeout=30
             )
             
-        if response.status_code == 200:
+        if response.status_code in [200, 201]:
             results = response.json()
             # Add source info
             for item in results:
