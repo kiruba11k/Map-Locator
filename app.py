@@ -263,6 +263,7 @@ def get_poi_color(types: str) -> List[int]:
     else:
         return [128, 128, 128, 200]  # Gray for others
 
+
 def create_poi_analysis_chart(poi_data: pd.DataFrame):
     """Create analysis charts for POI data."""
     if poi_data.empty:
@@ -271,22 +272,32 @@ def create_poi_analysis_chart(poi_data: pd.DataFrame):
     col1, col2 = st.columns(2)
     
     with col1:
-        # POI type distribution
+        # POI type distribution - FIXED
         if 'types' in poi_data.columns:
-            poi_data['main_type'] = poi_data['types'].apply(
-                lambda x: extract_main_type(str(x))
-            )
-            type_counts = poi_data['main_type'].value_counts().head(10)
+            # Flatten lists to get individual types
+            all_types = []
+            for type_list in poi_data['types'].dropna():
+                if isinstance(type_list, list):
+                    all_types.extend(type_list)
+                else:
+                    all_types.append(str(type_list))
+            
+            # Count frequency of each type
+            from collections import Counter
+            type_counts = Counter(all_types)
+            
+            # Get top 10 types
+            top_types = dict(type_counts.most_common(10))
             
             fig1 = px.pie(
-                values=type_counts.values,
-                names=type_counts.index,
-                title="POI Type Distribution"
+                values=list(top_types.values()),
+                names=list(top_types.keys()),
+                title="Top 10 POI Types"
             )
             st.plotly_chart(fig1, use_container_width=True)
     
     with col2:
-        # Rating distribution
+        # Rating distribution (unchanged)
         if 'rating' in poi_data.columns:
             poi_data['rating'] = pd.to_numeric(poi_data['rating'], errors='coerce')
             fig2 = px.histogram(
@@ -296,6 +307,7 @@ def create_poi_analysis_chart(poi_data: pd.DataFrame):
                 title="Rating Distribution"
             )
             st.plotly_chart(fig2, use_container_width=True)
+            
 
 def extract_main_type(types_str: str) -> str:
     """Extract main type from types array string."""
@@ -306,7 +318,38 @@ def extract_main_type(types_str: str) -> str:
     except:
         pass
     return "Unknown"
-
+def clean_poi_data(df: pd.DataFrame) -> pd.DataFrame:
+    """Clean and validate POI data from Apify API."""
+    if df.empty:
+        return df
+    
+    df_clean = df.copy()
+    
+    # Ensure rating is numeric
+    if 'rating' in df_clean.columns:
+        df_clean['rating'] = pd.to_numeric(df_clean['rating'], errors='coerce')
+    
+    # Ensure distance_km is numeric
+    if 'distance_km' in df_clean.columns:
+        df_clean['distance_km'] = pd.to_numeric(df_clean['distance_km'], errors='coerce')
+    
+    # Convert any string representations of lists to actual lists for 'types'
+    if 'types' in df_clean.columns:
+        def parse_types(val):
+            if isinstance(val, list):
+                return val
+            elif isinstance(val, str):
+                try:
+                    # Handle string representation of list
+                    import ast
+                    return ast.literal_eval(val)
+                except:
+                    return [val]
+            return []
+        
+        df_clean['types'] = df_clean['types'].apply(parse_types)
+    
+    return df_clean
 # ====================
 # 6. EXPORT FUNCTIONS
 # ====================
@@ -713,6 +756,7 @@ def main():
                 if results:
                     df_results = pd.DataFrame(results)
                     df_results['source_branch'] = 'Manual Search'
+                    df_results = clean_poi_data(df_results
                     st.session_state.poi_results = df_results
                     
                     # Add to history
@@ -729,6 +773,7 @@ def main():
                     query=search_query,
                     max_items_per_branch=max_results
                 )
+                df_results = clean_poi_data(df_results)
                 st.session_state.poi_results = df_results
                 
                 # Add to history
@@ -747,7 +792,19 @@ def main():
             with col1:
                 st.metric("Total POIs Found", len(st.session_state.poi_results))
             with col2:
-                unique_types = len(st.session_state.poi_results['types'].unique()) if 'types' in st.session_state.poi_results.columns else 0
+                
+                if 'types' in st.session_state.poi_results.columns:
+    # Flatten all lists and count unique individual type strings
+                    all_types = []
+                    for type_list in st.session_state.poi_results['types'].dropna():
+                        if isinstance(type_list, list):
+                            all_types.extend(type_list)
+                        else:
+                            all_types.append(str(type_list))
+                    unique_types = len(set(all_types))
+else:
+    unique_types = 0
+                
                 st.metric("Unique Types", unique_types)
             with col3:
                 if 'rating' in st.session_state.poi_results.columns:
