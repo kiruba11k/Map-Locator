@@ -23,7 +23,7 @@ st.set_page_config(
 # 2. CONSTANTS & CONFIG
 # ====================
 APIFY_API_URL = "https://api.apify.com/v2/acts/powerai~google-map-nearby-search-scraper/run-sync-get-dataset-items"
-APIFY_TOKEN = "apify_api_ucxQ2SNOVbfnmWYaY6vy1z5szgTpR11VbrEH"  # Replace with your actual token
+APIFY_TOKEN = st.secrets.get("TOKEN")  # Replace with your actual token
 
 # Common POI categories
 POI_CATEGORIES = {
@@ -75,8 +75,8 @@ def search_poi_apify(query: str, lat: float, lng: float, max_items: int = 50,
     
     payload = {
         "query": query,
-        "lat": lat,
-        "lng": lng,
+        "lat": str(lat),
+        "lng": str(lng),
         "maxItems": max_items,
         "country": country,
         "lang": lang,
