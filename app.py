@@ -9,6 +9,7 @@ from typing import Optional, List, Dict, Any
 import plotly.express as px
 import plotly.graph_objects as go
 from datetime import datetime
+import math
 
 # ====================
 # 1. PAGE CONFIG
@@ -35,6 +36,39 @@ POI_CATEGORIES = {
     "Government": ["government office", "municipal office"],
     "Banking": ["bank", "atm", "financial institution"]
 }
+
+# Generate distinct colors for branches
+def generate_branch_colors(branch_names):
+    """Generate distinct colors for each branch."""
+    colors = []
+    # Predefined distinct colors
+    distinct_colors = [
+        [255, 0, 0, 120],      # Red
+        [0, 255, 0, 120],      # Green
+        [0, 0, 255, 120],      # Blue
+        [255, 255, 0, 120],    # Yellow
+        [255, 0, 255, 120],    # Magenta
+        [0, 255, 255, 120],    # Cyan
+        [255, 128, 0, 120],    # Orange
+        [128, 0, 255, 120],    # Purple
+        [0, 128, 255, 120],    # Light Blue
+        [255, 0, 128, 120],    # Pink
+    ]
+    
+    color_map = {}
+    for i, branch in enumerate(branch_names):
+        if i < len(distinct_colors):
+            color_map[branch] = distinct_colors[i]
+        else:
+            # Generate random colors if we have more branches than predefined colors
+            import random
+            color_map[branch] = [
+                random.randint(50, 200),
+                random.randint(50, 200),
+                random.randint(50, 200),
+                120
+            ]
+    return color_map
 
 # ====================
 # 3. DATA FUNCTIONS
@@ -119,24 +153,39 @@ def search_poi_apify(query: str, lat: float, lng: float, max_items: int = 50,
 
 def calculate_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
     """Calculate distance between two points in kilometers."""
-    from math import radians, sin, cos, sqrt, atan2
-    
     R = 6371  # Earth's radius in km
     
-    lat1, lon1, lat2, lon2 = map(radians, [lat1, lon1, lat2, lon2])
+    lat1, lon1, lat2, lon2 = map(math.radians, [lat1, lon1, lat2, lon2])
     dlat = lat2 - lat1
     dlon = lon2 - lon1
     
-    a = sin(dlat/2)**2 + cos(lat1) * cos(lat2) * sin(dlon/2)**2
-    c = 2 * atan2(sqrt(a), sqrt(1-a))
+    a = math.sin(dlat/2)**2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon/2)**2
+    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
     
     return R * c
+
+def generate_circle_polygon(lat, lon, radius_km, num_points=64):
+    """Generate polygon points for a circle around a point."""
+    points = []
+    for i in range(num_points):
+        angle = 2 * math.pi * i / num_points
+        dx = radius_km * math.cos(angle) / 111.32  # 1 degree ≈ 111.32 km
+        dy = radius_km * math.sin(angle) / (111.32 * math.cos(math.radians(lat)))
+        
+        points.append([lon + dx, lat + dy])
+    
+    # Close the polygon
+    points.append(points[0])
+    return points
 
 def search_multiple_branches_poi(selected_branches: List[str], query: str, 
                                max_items_per_branch: int = 30) -> pd.DataFrame:
     """Search POI for multiple branches and combine results."""
     all_results = []
     branch_data = get_selected_branches_data(selected_branches)
+    
+    # Generate colors for branches
+    branch_colors = generate_branch_colors(branch_data['Branch'].tolist())
     
     progress_bar = st.progress(0)
     status_text = st.empty()
@@ -151,11 +200,12 @@ def search_multiple_branches_poi(selected_branches: List[str], query: str,
             max_items=max_items_per_branch
         )
         
-        # Add branch info to each result
+        # Add branch info and color to each result
         for result in results:
             result['source_branch'] = branch['Branch']
             result['source_ifsc'] = branch['IFSC_Code']
             result['source_address'] = branch['Address']
+            result['branch_color'] = branch_colors.get(branch['Branch'], [128, 128, 128, 200])
         
         all_results.extend(results)
         
@@ -172,40 +222,102 @@ def search_multiple_branches_poi(selected_branches: List[str], query: str,
 # ====================
 # 5. VISUALIZATION FUNCTIONS
 # ====================
-def create_poi_map(branch_data: pd.DataFrame, poi_data: pd.DataFrame) -> pdk.Deck:
-    """Create map showing branches and POIs."""
+def create_poi_map(branch_data: pd.DataFrame, poi_data: pd.DataFrame, radius_km: float = 3) -> pdk.Deck:
+    """Create map showing branches, POIs, and 3km radius circles."""
     layers = []
     
-    # Branch layer
+    # Generate unique colors for each branch
+    branch_colors = generate_branch_colors(branch_data['Branch'].tolist())
+    
+    # Add branch radius circles (3km)
+    radius_data = []
+    for _, branch in branch_data.iterrows():
+        color = branch_colors.get(branch['Branch'], [255, 0, 0, 40])
+        # Create a circle polygon
+        circle_polygon = generate_circle_polygon(
+            branch['Latitude'], 
+            branch['Longitude'], 
+            radius_km
+        )
+        
+        radius_data.append({
+            'branch': branch['Branch'],
+            'polygon': circle_polygon,
+            'color': color
+        })
+    
+    # Create PolygonLayer for radius circles
+    if radius_data:
+        # Prepare data for PolygonLayer
+        polygon_data = []
+        for item in radius_data:
+            polygon_data.append({
+                'polygon': item['polygon'],
+                'color': item['color']
+            })
+        
+        radius_layer = pdk.Layer(
+            "PolygonLayer",
+            polygon_data,
+            id="radius-layer",
+            stroked=True,
+            filled=True,
+            extruded=False,
+            wireframe=True,
+            get_polygon="polygon",
+            get_fill_color="color",
+            get_line_color=[0, 0, 0, 80],
+            get_line_width=50,
+            line_width_min_pixels=2,
+            pickable=True,
+        )
+        layers.append(radius_layer)
+    
+    # Branch layer with unique colors
+    branch_data_with_colors = branch_data.copy()
+    branch_data_with_colors['color'] = branch_data_with_colors['Branch'].map(branch_colors)
+    
     branch_layer = pdk.Layer(
         "ScatterplotLayer",
-        data=branch_data,
+        data=branch_data_with_colors,
         get_position=['Longitude', 'Latitude'],
         get_radius=200,
-        get_fill_color=[0, 0, 255, 200],
+        get_fill_color='color',
         pickable=True,
         auto_highlight=True,
-        radius_min_pixels=8,
-        radius_max_pixels=20,
+        radius_min_pixels=10,
+        radius_max_pixels=25,
+        id="branch-layer"
     )
     layers.append(branch_layer)
     
-    # POI layer
+    # POI layer - color by source branch
     if not poi_data.empty:
-        # Color POIs by category
         poi_data = poi_data.copy()
-        poi_data['color'] = poi_data['types'].apply(lambda x: get_poi_color(x))
+        
+        # Use branch color for POIs, or default color if no branch association
+        def get_poi_color(row):
+            if 'branch_color' in row and row['branch_color']:
+                return row['branch_color']
+            elif 'source_branch' in row and row['source_branch'] in branch_colors:
+                return branch_colors[row['source_branch']]
+            else:
+                return get_poi_color_by_type(row.get('types', ''))
+        
+        # Apply color function
+        poi_data['color'] = poi_data.apply(get_poi_color, axis=1)
         
         poi_layer = pdk.Layer(
             "ScatterplotLayer",
             data=poi_data,
             get_position=['longitude', 'latitude'],
-            get_radius=150,
+            get_radius=100,
             get_fill_color='color',
             pickable=True,
             auto_highlight=True,
             radius_min_pixels=6,
             radius_max_pixels=16,
+            id="poi-layer"
         )
         layers.append(poi_layer)
     
@@ -226,28 +338,45 @@ def create_poi_map(branch_data: pd.DataFrame, poi_data: pd.DataFrame) -> pdk.Dec
         pitch=40
     )
     
+    # Create tooltip
+    tooltip = {
+        "html": """
+        {% if layer.id == 'branch-layer' %}
+            <b>Branch: {Branch}</b><br>
+            IFSC: {IFSC_Code}<br>
+            Address: {Address}<br>
+            <i>3km radius shown</i>
+        {% elif layer.id == 'poi-layer' %}
+            <b>{name}</b><br>
+            Address: {full_address}<br>
+            Rating: {rating}/5<br>
+            Distance: {distance_km:.1f} km<br>
+            {% if source_branch %}
+            Source Branch: {source_branch}
+            {% endif %}
+        {% elif layer.id == 'radius-layer' %}
+            <b>3km Coverage Area</b><br>
+            Branch: {branch}
+        {% endif %}
+        """,
+        "style": {
+            "backgroundColor": "white",
+            "color": "black",
+            "padding": "10px",
+            "borderRadius": "5px",
+            "boxShadow": "0px 0px 10px rgba(0,0,0,0.2)"
+        }
+    }
+    
     return pdk.Deck(
         layers=layers,
         initial_view_state=view_state,
         map_style='light',
-        tooltip={
-            "html": """
-            {% if layer.id.includes('branch') %}
-                <b>Branch: {Branch}</b><br>
-                IFSC: {IFSC_Code}<br>
-                Address: {Address}
-            {% else %}
-                <b>{name}</b><br>
-                Address: {full_address}<br>
-                Rating: {rating}/5<br>
-                Distance: {distance_km:.1f} km
-            {% endif %}
-            """
-        }
+        tooltip=tooltip
     )
 
-def get_poi_color(types: str) -> List[int]:
-    """Get color based on POI type."""
+def get_poi_color_by_type(types: str) -> List[int]:
+    """Get color based on POI type (fallback when no branch association)."""
     types_str = str(types).lower()
     
     if any(word in types_str for word in ['college', 'university', 'school']):
@@ -262,7 +391,6 @@ def get_poi_color(types: str) -> List[int]:
         return [255, 165, 0, 200]  # Orange for food
     else:
         return [128, 128, 128, 200]  # Gray for others
-
 
 def create_poi_analysis_chart(poi_data: pd.DataFrame):
     """Create analysis charts for POI data."""
@@ -307,17 +435,7 @@ def create_poi_analysis_chart(poi_data: pd.DataFrame):
                 title="Rating Distribution"
             )
             st.plotly_chart(fig2, use_container_width=True)
-            
 
-def extract_main_type(types_str: str) -> str:
-    """Extract main type from types array string."""
-    try:
-        types = eval(types_str) if isinstance(types_str, str) else types_str
-        if isinstance(types, list) and types:
-            return types[0]
-    except:
-        pass
-    return "Unknown"
 def clean_poi_data(df: pd.DataFrame) -> pd.DataFrame:
     """Clean and validate POI data from Apify API."""
     if df.empty:
@@ -350,6 +468,7 @@ def clean_poi_data(df: pd.DataFrame) -> pd.DataFrame:
         df_clean['types'] = df_clean['types'].apply(parse_types)
     
     return df_clean
+
 # ====================
 # 6. EXPORT FUNCTIONS
 # ====================
@@ -536,6 +655,37 @@ def inject_modern_ui():
         padding: 10px;
         border-radius: 12px;
     }
+    
+    /* Branch color legend */
+    .color-legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin: 10px 0;
+        padding: 10px;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+    
+    .legend-color {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        border: 2px solid #fff;
+        box-shadow: 0 0 3px rgba(0,0,0,0.3);
+    }
+    
+    .legend-text {
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
     </style>
     """, unsafe_allow_html=True)
 
@@ -661,6 +811,9 @@ def main():
     # POI Search in sidebar
     st.sidebar.markdown("###  POI Search")
     
+    # Search radius
+    search_radius = st.sidebar.slider("Search Radius (km)", 1, 10, 3)
+    
     # Quick search category
     quick_search = st.sidebar.selectbox(
         "Quick Search Category",
@@ -679,8 +832,6 @@ def main():
         default=["All Branches"]
     )
     
-    # Search radius
-    search_radius = st.sidebar.slider("Search Radius (km)", 1, 10, 3)
     max_results = st.sidebar.slider("Max Results per Branch", 10, 100, 30)
     
     # Manual coordinates search
@@ -781,6 +932,7 @@ def main():
                     'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                     'query': search_query,
                     'branches': selected_poi_branches,
+                    'radius_km': search_radius,
                     'results': len(df_results) if not df_results.empty else 0
                 })
     
@@ -792,9 +944,7 @@ def main():
             with col1:
                 st.metric("Total POIs Found", len(st.session_state.poi_results))
             with col2:
-                
                 if 'types' in st.session_state.poi_results.columns:
-    # Flatten all lists and count unique individual type strings
                     all_types = []
                     for type_list in st.session_state.poi_results['types'].dropna():
                         if isinstance(type_list, list):
@@ -811,12 +961,33 @@ def main():
                     avg_rating = st.session_state.poi_results['rating'].mean()
                     st.metric("Avg Rating", f"{avg_rating:.1f}/5")
             
-            # POI Map
-            st.markdown("###  POI Distribution Map")
+            # Show branch color legend if we have multiple branches
+            if 'source_branch' in st.session_state.poi_results.columns:
+                unique_branches = st.session_state.poi_results['source_branch'].unique()
+                if len(unique_branches) > 1:
+                    st.markdown("### Branch Color Legend")
+                    branch_colors = generate_branch_colors(unique_branches)
+                    
+                    # Create legend HTML
+                    legend_html = '<div class="color-legend">'
+                    for branch in unique_branches:
+                        color = branch_colors.get(branch, [128, 128, 128, 200])
+                        color_hex = f'rgb({color[0]}, {color[1]}, {color[2]})'
+                        legend_html += f'''
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: {color_hex};"></div>
+                            <span class="legend-text">{branch}</span>
+                        </div>
+                        '''
+                    legend_html += '</div>'
+                    st.markdown(legend_html, unsafe_allow_html=True)
+            
+            # POI Map with radius circles
+            st.markdown("###  POI Distribution Map (with 3km radius)")
             selected_branches_data = get_selected_branches_data(
                 selected_poi_branches if not manual_search else []
             )
-            poi_map = create_poi_map(selected_branches_data, st.session_state.poi_results)
+            poi_map = create_poi_map(selected_branches_data, st.session_state.poi_results, search_radius)
             st.pydeck_chart(poi_map, use_container_width=True)
             
             # Results table
