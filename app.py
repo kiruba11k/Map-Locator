@@ -919,8 +919,7 @@ def create_branch_color_legend(branches, branch_colors, radius_colors):
             radius_color = radius_colors.get(branch, [128, 128, 128, 40])
             radius_hex = f'rgb({radius_color[0]}, {radius_color[1]}, {radius_color[2]})'
             
-            legend_html += f'''
-            <div class="legend-item" style="border-left-color: {marker_hex};">
+            legend_html += f'''<div class="legend-item" style="border-left-color: {marker_hex};">
                 <div class="legend-color-circle" style="background-color: {marker_hex};"></div>
                 <div class="legend-color-square" style="background-color: {radius_hex};"></div>
                 <span class="legend-text">{branch}</span>
