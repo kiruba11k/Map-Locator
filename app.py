@@ -173,7 +173,7 @@ def calculate_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> fl
     dlon = lon2 - lon1
     
     a = math.sin(dlat/2)**2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon/2)**2
-    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
+    c = 2 * math.atan2(math.sqrt(a), sqrt(1-a))
     
     return R * c
 
@@ -259,7 +259,8 @@ def create_branch_network_map(branch_data: pd.DataFrame, selected_branch: Option
             'branch': branch['Branch'],
             'ifsc': branch['IFSC_Code'],
             'address': branch['Address'],
-            'color': radius_color
+            'city': branch['City'],
+            'pincode': branch['Pincode']
         })
     
     # Create PolygonLayer for radius circles
@@ -273,7 +274,7 @@ def create_branch_network_map(branch_data: pd.DataFrame, selected_branch: Option
             extruded=False,
             wireframe=True,
             get_polygon="polygon",
-            get_fill_color="color",
+            get_fill_color=radius_colors.get(branch_data['Branch'].iloc[0], [128, 128, 128, 40]) if not branch_data.empty else [128, 128, 128, 40],
             get_line_color=[0, 0, 0, 80],
             get_line_width=2,
             line_width_min_pixels=1,
@@ -330,7 +331,7 @@ def create_branch_network_map(branch_data: pd.DataFrame, selected_branch: Option
         pitch=pitch
     )
     
-    # Create tooltip
+    # Create tooltip - SIMPLIFIED VERSION without complex conditionals
     tooltip = {
         "html": """
         <div style="
@@ -342,25 +343,17 @@ def create_branch_network_map(branch_data: pd.DataFrame, selected_branch: Option
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             font-size: 12px;
             max-width: 300px;
-        ">{% if layer.id == 'branch-layer' %}
-                <div style="font-weight: bold; color: #1a73e8; margin-bottom: 5px;">
-                     SBI Branch: {Branch}
-                </div>
-                <div><strong>IFSC:</strong> {IFSC_Code}</div>
-                <div><strong>Address:</strong> {Address}</div>
-                <div><strong>City:</strong> {City}</div>
-                <div><strong>Pincode:</strong> {Pincode}</div>
-                <div style="margin-top: 8px; font-style: italic; color: #666;">
-                    3km radius coverage area shown
-                </div>
-            {% elif layer.id == 'radius-layer' %}
-                <div style="font-weight: bold; color: #4caf50; margin-bottom: 5px;">
-                     3km Coverage Area
-                </div>
-                <div><strong>Branch:</strong> {branch}</div>
-                <div><strong>IFSC:</strong> {ifsc}</div>
-                <div><strong>Address:</strong> {address}</div>
-            {% endif %}
+        ">
+            <div style="font-weight: bold; color: #1a73e8; margin-bottom: 5px;">
+                🏦 SBI Branch: {Branch}
+            </div>
+            <div><strong>IFSC:</strong> {IFSC_Code}</div>
+            <div><strong>Address:</strong> {Address}</div>
+            <div><strong>City:</strong> {City}</div>
+            <div><strong>Pincode:</strong> {Pincode}</div>
+            <div style="margin-top: 8px; font-style: italic; color: #666;">
+                3km radius coverage area shown
+            </div>
         </div>
         """
     }
@@ -403,7 +396,8 @@ def create_poi_map(branch_data: pd.DataFrame, poi_data: pd.DataFrame, radius_km:
             'branch': branch['Branch'],
             'ifsc': branch['IFSC_Code'],
             'address': branch['Address'],
-            'color': radius_color
+            'city': branch['City'],
+            'pincode': branch['Pincode']
         })
     
     # Create PolygonLayer for radius circles
@@ -417,7 +411,7 @@ def create_poi_map(branch_data: pd.DataFrame, poi_data: pd.DataFrame, radius_km:
             extruded=False,
             wireframe=True,
             get_polygon="polygon",
-            get_fill_color="color",
+            get_fill_color=radius_colors.get(branch_data['Branch'].iloc[0], [128, 128, 128, 40]) if not branch_data.empty else [128, 128, 128, 40],
             get_line_color=[0, 0, 0, 80],
             get_line_width=2,
             line_width_min_pixels=1,
@@ -463,6 +457,18 @@ def create_poi_map(branch_data: pd.DataFrame, poi_data: pd.DataFrame, radius_km:
         # Apply color function
         poi_data['color'] = poi_data.apply(get_poi_color, axis=1)
         
+        # Ensure required columns exist for tooltip
+        for col in ['rating', 'review_count', 'distance_km', 'full_address']:
+            if col not in poi_data.columns:
+                if col == 'review_count':
+                    poi_data[col] = 0
+                elif col == 'distance_km':
+                    poi_data[col] = 0.0
+                elif col == 'rating':
+                    poi_data[col] = 'N/A'
+                else:
+                    poi_data[col] = 'N/A'
+        
         poi_layer = pdk.Layer(
             "ScatterplotLayer",
             data=poi_data,
@@ -497,7 +503,7 @@ def create_poi_map(branch_data: pd.DataFrame, poi_data: pd.DataFrame, radius_km:
         pitch=40
     )
     
-    # Create tooltip
+    # Create simplified tooltip without complex conditionals
     tooltip = {
         "html": """
         <div style="
@@ -510,43 +516,15 @@ def create_poi_map(branch_data: pd.DataFrame, poi_data: pd.DataFrame, radius_km:
             font-size: 12px;
             max-width: 300px;
         ">
-            {% if layer.id == 'branch-layer' %}
-                <div style="font-weight: bold; color: #1a73e8; margin-bottom: 5px;">
-                    🏦 SBI Branch: {Branch}
-                </div>
-                <div><strong>IFSC:</strong> {IFSC_Code}</div>
-                <div><strong>Address:</strong> {Address}</div>
-                <div><strong>City:</strong> {City}</div>
-                <div><strong>Pincode:</strong> {Pincode}</div>
-                <div style="margin-top: 8px; font-style: italic; color: #666;">
-                    3km radius shown around branch
-                </div>
-            {% elif layer.id == 'poi-layer' %}
-                <div style="font-weight: bold; color: #e91e63; margin-bottom: 5px;">
-                    📍 {name}
-                </div>
-                <div><strong>Address:</strong> {full_address}</div>
-                {% if rating %}
-                <div><strong>Rating:</strong> {rating}/5 ({{review_count}} reviews)</div>
-                {% endif %}
-                {% if distance_km %}
-                <div><strong>Distance:</strong> {{distance_km:.1f}} km</div>
-                {% endif %}
-                {% if source_branch %}
-                <div style="margin-top: 8px; padding: 3px 6px; background-color: #e3f2fd; border-radius: 3px; display: inline-block;">
-                    <strong>Branch:</strong> {source_branch}
-                </div>
-                {% endif %}
-            {% elif layer.id == 'radius-layer' %}
-                <div style="font-weight: bold; color: #4caf50; margin-bottom: 5px;">
-                    ⭕ 3km Coverage Area
-                </div>
-                <div><strong>Branch:</strong> {branch}</div>
-                <div><strong>IFSC:</strong> {ifsc}</div>
-                <div style="margin-top: 8px; font-style: italic; color: #666;">
-                    All POIs within this radius are colored to match this branch
-                </div>
-            {% endif %}
+            <div style="font-weight: bold; color: #e91e63; margin-bottom: 5px;">
+                📍 {name}
+            </div>
+            <div><strong>Address:</strong> {full_address}</div>
+            <div><strong>Rating:</strong> {rating}/5 ({review_count} reviews)</div>
+            <div><strong>Distance:</strong> {distance_km:.1f} km</div>
+            <div style="margin-top: 8px; padding: 3px 6px; background-color: #e3f2fd; border-radius: 3px; display: inline-block;">
+                <strong>Branch:</strong> {source_branch}
+            </div>
         </div>
         """
     }
@@ -903,7 +881,8 @@ def render_metrics(df):
 
 def create_branch_color_legend(branches, branch_colors, radius_colors):
     """Create HTML for branch color legend."""
-    legend_html = '''<div class="color-legend">
+    legend_html = '''
+    <div class="color-legend">
         <div class="legend-title">Branch Color Legend</div>
     '''
     
@@ -917,14 +896,16 @@ def create_branch_color_legend(branches, branch_colors, radius_colors):
             radius_color = radius_colors.get(branch, [128, 128, 128, 40])
             radius_hex = f'rgb({radius_color[0]}, {radius_color[1]}, {radius_color[2]})'
             
-            legend_html += f'''<div class="legend-item" style="border-left-color: {marker_hex};">
+            legend_html += f'''
+            <div class="legend-item" style="border-left-color: {marker_hex};">
                 <div class="legend-color-circle" style="background-color: {marker_hex};"></div>
                 <div class="legend-color-square" style="background-color: {radius_hex};"></div>
                 <span class="legend-text">{branch}</span>
             </div>
             '''
     
-    legend_html += '''<div style="width: 100%; font-size: 0.8rem; color: #666; margin-top: 10px;">
+    legend_html += '''
+        <div style="width: 100%; font-size: 0.8rem; color: #666; margin-top: 10px;">
             <div>● Branch Marker & POIs (Solid Color)</div>
             <div>■ 3km Radius Area (Light Transparent)</div>
         </div>
@@ -1059,6 +1040,8 @@ def main():
         )
         st.pydeck_chart(branch_map, use_container_width=True)
         
+        # Note about tooltips
+        
         st.divider()
         st.markdown("###  Branch Details")
         st.dataframe(data, use_container_width=True)
@@ -1153,6 +1136,7 @@ def main():
             poi_map = create_poi_map(selected_branches_data, st.session_state.poi_results, poi_radius)
             st.pydeck_chart(poi_map, use_container_width=True)
             
+            # Note about tooltips            
             # Results table
             st.markdown("###  POI Results Table")
             
