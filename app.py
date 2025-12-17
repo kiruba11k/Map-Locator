@@ -342,8 +342,7 @@ def create_branch_network_map(branch_data: pd.DataFrame, selected_branch: Option
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             font-size: 12px;
             max-width: 300px;
-        ">
-            {% if layer.id == 'branch-layer' %}
+        ">{% if layer.id == 'branch-layer' %}
                 <div style="font-weight: bold; color: #1a73e8; margin-bottom: 5px;">
                      SBI Branch: {Branch}
                 </div>
