@@ -345,7 +345,7 @@ def create_branch_network_map(branch_data: pd.DataFrame, selected_branch: Option
         ">
             {% if layer.id == 'branch-layer' %}
                 <div style="font-weight: bold; color: #1a73e8; margin-bottom: 5px;">
-                    🏦 SBI Branch: {Branch}
+                     SBI Branch: {Branch}
                 </div>
                 <div><strong>IFSC:</strong> {IFSC_Code}</div>
                 <div><strong>Address:</strong> {Address}</div>
@@ -356,7 +356,7 @@ def create_branch_network_map(branch_data: pd.DataFrame, selected_branch: Option
                 </div>
             {% elif layer.id == 'radius-layer' %}
                 <div style="font-weight: bold; color: #4caf50; margin-bottom: 5px;">
-                    ⭕ 3km Coverage Area
+                     3km Coverage Area
                 </div>
                 <div><strong>Branch:</strong> {branch}</div>
                 <div><strong>IFSC:</strong> {ifsc}</div>
@@ -904,8 +904,7 @@ def render_metrics(df):
 
 def create_branch_color_legend(branches, branch_colors, radius_colors):
     """Create HTML for branch color legend."""
-    legend_html = '''
-    <div class="color-legend">
+    legend_html = '''<div class="color-legend">
         <div class="legend-title">Branch Color Legend</div>
     '''
     
@@ -926,8 +925,7 @@ def create_branch_color_legend(branches, branch_colors, radius_colors):
             </div>
             '''
     
-    legend_html += '''
-        <div style="width: 100%; font-size: 0.8rem; color: #666; margin-top: 10px;">
+    legend_html += '''<div style="width: 100%; font-size: 0.8rem; color: #666; margin-top: 10px;">
             <div>● Branch Marker & POIs (Solid Color)</div>
             <div>■ 3km Radius Area (Light Transparent)</div>
         </div>
