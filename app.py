@@ -40,25 +40,39 @@ POI_CATEGORIES = {
 # Generate distinct colors for branches
 def generate_branch_colors(branch_names):
     """Generate distinct colors for each branch."""
-    colors = []
-    # Predefined distinct colors
-    distinct_colors = [
-        [255, 0, 0, 120],      # Red
-        [0, 255, 0, 120],      # Green
-        [0, 0, 255, 120],      # Blue
-        [255, 255, 0, 120],    # Yellow
-        [255, 0, 255, 120],    # Magenta
-        [0, 255, 255, 120],    # Cyan
-        [255, 128, 0, 120],    # Orange
-        [128, 0, 255, 120],    # Purple
-        [0, 128, 255, 120],    # Light Blue
-        [255, 0, 128, 120],    # Pink
+    # Predefined distinct colors for branches (opaque for markers)
+    branch_colors = [
+        [255, 0, 0, 200],      # Red - PANATHUR
+        [0, 255, 0, 200],      # Green - BELLANDUR
+        [0, 0, 255, 200],      # Blue - BELLANDUR-OUTER
+        [255, 255, 0, 200],    # Yellow - DOMLUR
+        [255, 0, 255, 200],    # Magenta - BRIGADE METROPOLIS
+        [0, 255, 255, 200],    # Cyan
+        [255, 128, 0, 200],    # Orange
+        [128, 0, 255, 200],    # Purple
+        [0, 128, 255, 200],    # Light Blue
+        [255, 0, 128, 200],    # Pink
     ]
     
+    # Generate lighter transparent versions for radius circles
+    radius_colors = []
+    for color in branch_colors:
+        # Create a lighter, more transparent version for radius
+        radius_color = [
+            min(color[0] + 50, 255),
+            min(color[1] + 50, 255),
+            min(color[2] + 50, 255),
+            30  # More transparent
+        ]
+        radius_colors.append(radius_color)
+    
     color_map = {}
+    radius_color_map = {}
+    
     for i, branch in enumerate(branch_names):
-        if i < len(distinct_colors):
-            color_map[branch] = distinct_colors[i]
+        if i < len(branch_colors):
+            color_map[branch] = branch_colors[i]
+            radius_color_map[branch] = radius_colors[i]
         else:
             # Generate random colors if we have more branches than predefined colors
             import random
@@ -66,9 +80,16 @@ def generate_branch_colors(branch_names):
                 random.randint(50, 200),
                 random.randint(50, 200),
                 random.randint(50, 200),
-                120
+                200
             ]
-    return color_map
+            radius_color_map[branch] = [
+                min(color_map[branch][0] + 50, 255),
+                min(color_map[branch][1] + 50, 255),
+                min(color_map[branch][2] + 50, 255),
+                30
+            ]
+    
+    return color_map, radius_color_map
 
 # ====================
 # 3. DATA FUNCTIONS
@@ -185,7 +206,7 @@ def search_multiple_branches_poi(selected_branches: List[str], query: str,
     branch_data = get_selected_branches_data(selected_branches)
     
     # Generate colors for branches
-    branch_colors = generate_branch_colors(branch_data['Branch'].tolist())
+    branch_colors, radius_colors = generate_branch_colors(branch_data['Branch'].tolist())
     
     progress_bar = st.progress(0)
     status_text = st.empty()
@@ -223,16 +244,16 @@ def search_multiple_branches_poi(selected_branches: List[str], query: str,
 # 5. VISUALIZATION FUNCTIONS
 # ====================
 def create_poi_map(branch_data: pd.DataFrame, poi_data: pd.DataFrame, radius_km: float = 3) -> pdk.Deck:
-    """Create map showing branches, POIs, and 3km radius circles."""
+    """Create map showing branches, POIs, and 3km radius circles with unique colors."""
     layers = []
     
     # Generate unique colors for each branch
-    branch_colors = generate_branch_colors(branch_data['Branch'].tolist())
+    branch_colors, radius_colors = generate_branch_colors(branch_data['Branch'].tolist())
     
-    # Add branch radius circles (3km)
-    radius_data = []
+    # Add branch radius circles (3km) with unique colors
+    radius_layer_data = []
     for _, branch in branch_data.iterrows():
-        color = branch_colors.get(branch['Branch'], [255, 0, 0, 40])
+        radius_color = radius_colors.get(branch['Branch'], [128, 128, 128, 30])
         # Create a circle polygon
         circle_polygon = generate_circle_polygon(
             branch['Latitude'], 
@@ -240,25 +261,19 @@ def create_poi_map(branch_data: pd.DataFrame, poi_data: pd.DataFrame, radius_km:
             radius_km
         )
         
-        radius_data.append({
-            'branch': branch['Branch'],
+        radius_layer_data.append({
             'polygon': circle_polygon,
-            'color': color
+            'branch': branch['Branch'],
+            'ifsc': branch['IFSC_Code'],
+            'address': branch['Address'],
+            'color': radius_color
         })
     
     # Create PolygonLayer for radius circles
-    if radius_data:
-        # Prepare data for PolygonLayer
-        polygon_data = []
-        for item in radius_data:
-            polygon_data.append({
-                'polygon': item['polygon'],
-                'color': item['color']
-            })
-        
+    if radius_layer_data:
         radius_layer = pdk.Layer(
             "PolygonLayer",
-            polygon_data,
+            radius_layer_data,
             id="radius-layer",
             stroked=True,
             filled=True,
@@ -266,9 +281,9 @@ def create_poi_map(branch_data: pd.DataFrame, poi_data: pd.DataFrame, radius_km:
             wireframe=True,
             get_polygon="polygon",
             get_fill_color="color",
-            get_line_color=[0, 0, 0, 80],
-            get_line_width=50,
-            line_width_min_pixels=2,
+            get_line_color=[0, 0, 0, 100],
+            get_line_width=2,
+            line_width_min_pixels=1,
             pickable=True,
         )
         layers.append(radius_layer)
@@ -280,14 +295,17 @@ def create_poi_map(branch_data: pd.DataFrame, poi_data: pd.DataFrame, radius_km:
     branch_layer = pdk.Layer(
         "ScatterplotLayer",
         data=branch_data_with_colors,
+        id="branch-layer",
         get_position=['Longitude', 'Latitude'],
         get_radius=200,
         get_fill_color='color',
+        get_line_color=[0, 0, 0, 200],
+        get_line_width=50,
+        line_width_min_pixels=2,
         pickable=True,
         auto_highlight=True,
         radius_min_pixels=10,
         radius_max_pixels=25,
-        id="branch-layer"
     )
     layers.append(branch_layer)
     
@@ -302,7 +320,8 @@ def create_poi_map(branch_data: pd.DataFrame, poi_data: pd.DataFrame, radius_km:
             elif 'source_branch' in row and row['source_branch'] in branch_colors:
                 return branch_colors[row['source_branch']]
             else:
-                return get_poi_color_by_type(row.get('types', ''))
+                # Default color for POIs without branch association
+                return [128, 128, 128, 180]
         
         # Apply color function
         poi_data['color'] = poi_data.apply(get_poi_color, axis=1)
@@ -310,14 +329,17 @@ def create_poi_map(branch_data: pd.DataFrame, poi_data: pd.DataFrame, radius_km:
         poi_layer = pdk.Layer(
             "ScatterplotLayer",
             data=poi_data,
+            id="poi-layer",
             get_position=['longitude', 'latitude'],
             get_radius=100,
             get_fill_color='color',
+            get_line_color=[255, 255, 255, 200],
+            get_line_width=20,
+            line_width_min_pixels=1,
             pickable=True,
             auto_highlight=True,
-            radius_min_pixels=6,
-            radius_max_pixels=16,
-            id="poi-layer"
+            radius_min_pixels=5,
+            radius_max_pixels=15,
         )
         layers.append(poi_layer)
     
@@ -341,31 +363,55 @@ def create_poi_map(branch_data: pd.DataFrame, poi_data: pd.DataFrame, radius_km:
     # Create tooltip
     tooltip = {
         "html": """
-        {% if layer.id == 'branch-layer' %}
-            <b>Branch: {Branch}</b><br>
-            IFSC: {IFSC_Code}<br>
-            Address: {Address}<br>
-            <i>3km radius shown</i>
-        {% elif layer.id == 'poi-layer' %}
-            <b>{name}</b><br>
-            Address: {full_address}<br>
-            Rating: {rating}/5<br>
-            Distance: {distance_km:.1f} km<br>
-            {% if source_branch %}
-            Source Branch: {source_branch}
+        <div style="
+            background: white;
+            color: black;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0px 0px 10px rgba(0,0,0,0.2);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 12px;
+            max-width: 300px;
+        ">
+            {% if layer.id == 'branch-layer' %}
+                <div style="font-weight: bold; color: #1a73e8; margin-bottom: 5px;">
+                    🏦 SBI Branch: {Branch}
+                </div>
+                <div><strong>IFSC:</strong> {IFSC_Code}</div>
+                <div><strong>Address:</strong> {Address}</div>
+                <div><strong>City:</strong> {City}</div>
+                <div><strong>Pincode:</strong> {Pincode}</div>
+                <div style="margin-top: 8px; font-style: italic; color: #666;">
+                    3km radius shown around branch
+                </div>
+            {% elif layer.id == 'poi-layer' %}
+                <div style="font-weight: bold; color: #e91e63; margin-bottom: 5px;">
+                    📍 {name}
+                </div>
+                <div><strong>Address:</strong> {full_address}</div>
+                {% if rating %}
+                <div><strong>Rating:</strong> {rating}/5 ({{review_count}} reviews)</div>
+                {% endif %}
+                {% if distance_km %}
+                <div><strong>Distance:</strong> {{distance_km:.1f}} km</div>
+                {% endif %}
+                {% if source_branch %}
+                <div style="margin-top: 8px; padding: 3px 6px; background-color: #e3f2fd; border-radius: 3px; display: inline-block;">
+                    <strong>Branch:</strong> {source_branch}
+                </div>
+                {% endif %}
+            {% elif layer.id == 'radius-layer' %}
+                <div style="font-weight: bold; color: #4caf50; margin-bottom: 5px;">
+                    ⭕ 3km Coverage Area
+                </div>
+                <div><strong>Branch:</strong> {branch}</div>
+                <div><strong>IFSC:</strong> {ifsc}</div>
+                <div style="margin-top: 8px; font-style: italic; color: #666;">
+                    All POIs within this radius are colored to match this branch
+                </div>
             {% endif %}
-        {% elif layer.id == 'radius-layer' %}
-            <b>3km Coverage Area</b><br>
-            Branch: {branch}
-        {% endif %}
-        """,
-        "style": {
-            "backgroundColor": "white",
-            "color": "black",
-            "padding": "10px",
-            "borderRadius": "5px",
-            "boxShadow": "0px 0px 10px rgba(0,0,0,0.2)"
-        }
+        </div>
+        """
     }
     
     return pdk.Deck(
@@ -374,67 +420,6 @@ def create_poi_map(branch_data: pd.DataFrame, poi_data: pd.DataFrame, radius_km:
         map_style='light',
         tooltip=tooltip
     )
-
-def get_poi_color_by_type(types: str) -> List[int]:
-    """Get color based on POI type (fallback when no branch association)."""
-    types_str = str(types).lower()
-    
-    if any(word in types_str for word in ['college', 'university', 'school']):
-        return [255, 0, 0, 200]  # Red for education
-    elif any(word in types_str for word in ['tech', 'office', 'corporate']):
-        return [0, 255, 0, 200]  # Green for business
-    elif any(word in types_str for word in ['hospital', 'clinic', 'medical']):
-        return [255, 255, 0, 200]  # Yellow for healthcare
-    elif any(word in types_str for word in ['mall', 'shopping', 'market']):
-        return [255, 0, 255, 200]  # Magenta for retail
-    elif any(word in types_str for word in ['restaurant', 'cafe', 'food']):
-        return [255, 165, 0, 200]  # Orange for food
-    else:
-        return [128, 128, 128, 200]  # Gray for others
-
-def create_poi_analysis_chart(poi_data: pd.DataFrame):
-    """Create analysis charts for POI data."""
-    if poi_data.empty:
-        return
-    
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        # POI type distribution - FIXED
-        if 'types' in poi_data.columns:
-            # Flatten lists to get individual types
-            all_types = []
-            for type_list in poi_data['types'].dropna():
-                if isinstance(type_list, list):
-                    all_types.extend(type_list)
-                else:
-                    all_types.append(str(type_list))
-            
-            # Count frequency of each type
-            from collections import Counter
-            type_counts = Counter(all_types)
-            
-            # Get top 10 types
-            top_types = dict(type_counts.most_common(10))
-            
-            fig1 = px.pie(
-                values=list(top_types.values()),
-                names=list(top_types.keys()),
-                title="Top 10 POI Types"
-            )
-            st.plotly_chart(fig1, use_container_width=True)
-    
-    with col2:
-        # Rating distribution (unchanged)
-        if 'rating' in poi_data.columns:
-            poi_data['rating'] = pd.to_numeric(poi_data['rating'], errors='coerce')
-            fig2 = px.histogram(
-                poi_data.dropna(subset=['rating']),
-                x='rating',
-                nbins=20,
-                title="Rating Distribution"
-            )
-            st.plotly_chart(fig2, use_container_width=True)
 
 def clean_poi_data(df: pd.DataFrame) -> pd.DataFrame:
     """Clean and validate POI data from Apify API."""
@@ -468,6 +453,49 @@ def clean_poi_data(df: pd.DataFrame) -> pd.DataFrame:
         df_clean['types'] = df_clean['types'].apply(parse_types)
     
     return df_clean
+
+def create_poi_analysis_chart(poi_data: pd.DataFrame):
+    """Create analysis charts for POI data."""
+    if poi_data.empty:
+        return
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        # POI type distribution
+        if 'types' in poi_data.columns:
+            all_types = []
+            for type_list in poi_data['types'].dropna():
+                if isinstance(type_list, list):
+                    all_types.extend(type_list)
+                else:
+                    all_types.append(str(type_list))
+            
+            # Count frequency of each type
+            from collections import Counter
+            type_counts = Counter(all_types)
+            
+            # Get top 10 types
+            top_types = dict(type_counts.most_common(10))
+            
+            fig1 = px.pie(
+                values=list(top_types.values()),
+                names=list(top_types.keys()),
+                title="Top 10 POI Types"
+            )
+            st.plotly_chart(fig1, use_container_width=True)
+    
+    with col2:
+        # Rating distribution
+        if 'rating' in poi_data.columns:
+            poi_data['rating'] = pd.to_numeric(poi_data['rating'], errors='coerce')
+            fig2 = px.histogram(
+                poi_data.dropna(subset=['rating']),
+                x='rating',
+                nbins=20,
+                title="Rating Distribution"
+            )
+            st.plotly_chart(fig2, use_container_width=True)
 
 # ====================
 # 6. EXPORT FUNCTIONS
@@ -647,44 +675,57 @@ def inject_modern_ui():
     .stDataFrame table {
         font-size: 0.95rem;
     }
-
-    /* MAP TOOLTIP */
-    .map-tooltip {
-        background: var(--bright-teal-blue);
-        color: white;
-        padding: 10px;
-        border-radius: 12px;
-    }
     
     /* Branch color legend */
     .color-legend {
         display: flex;
         flex-wrap: wrap;
-        gap: 10px;
-        margin: 10px 0;
-        padding: 10px;
+        gap: 15px;
+        margin: 15px 0;
+        padding: 15px;
         background: white;
-        border-radius: 8px;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
     
     .legend-item {
         display: flex;
         align-items: center;
-        gap: 5px;
+        gap: 8px;
+        padding: 5px 10px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        border-left: 4px solid;
     }
     
-    .legend-color {
+    .legend-color-circle {
         width: 20px;
         height: 20px;
         border-radius: 50%;
-        border: 2px solid #fff;
+        border: 2px solid white;
         box-shadow: 0 0 3px rgba(0,0,0,0.3);
     }
     
+    .legend-color-square {
+        width: 20px;
+        height: 20px;
+        border-radius: 4px;
+        border: 2px solid white;
+        box-shadow: 0 0 3px rgba(0,0,0,0.3);
+        opacity: 0.3;
+    }
+    
     .legend-text {
-        font-size: 0.8rem;
+        font-size: 0.85rem;
         font-weight: 500;
+    }
+    
+    .legend-title {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--deep-twilight);
+        margin-bottom: 10px;
+        width: 100%;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -777,6 +818,41 @@ def render_metrics(df):
             <div class="metric-value">Now</div>
         </div>
         """, unsafe_allow_html=True)
+
+def create_branch_color_legend(branches, branch_colors, radius_colors):
+    """Create HTML for branch color legend."""
+    legend_html = '''
+    <div class="color-legend">
+        <div class="legend-title">Branch Color Legend</div>
+    '''
+    
+    for branch in branches:
+        if branch in branch_colors:
+            # Branch marker color (circle)
+            marker_color = branch_colors[branch]
+            marker_hex = f'rgb({marker_color[0]}, {marker_color[1]}, {marker_color[2]})'
+            
+            # Radius color (square with transparency)
+            radius_color = radius_colors.get(branch, [128, 128, 128, 30])
+            radius_hex = f'rgb({radius_color[0]}, {radius_color[1]}, {radius_color[2]})'
+            
+            legend_html += f'''
+            <div class="legend-item" style="border-left-color: {marker_hex};">
+                <div class="legend-color-circle" style="background-color: {marker_hex};"></div>
+                <div class="legend-color-square" style="background-color: {radius_hex};"></div>
+                <span class="legend-text">{branch}</span>
+            </div>
+            '''
+    
+    legend_html += '''
+        <div style="width: 100%; font-size: 0.8rem; color: #666; margin-top: 10px;">
+            <div>● Branch Marker & POIs</div>
+            <div>■ 3km Radius Area</div>
+        </div>
+    </div>
+    '''
+    
+    return legend_html
 
 # ====================
 # 10. MAIN APPLICATION
@@ -964,26 +1040,19 @@ def main():
             # Show branch color legend if we have multiple branches
             if 'source_branch' in st.session_state.poi_results.columns:
                 unique_branches = st.session_state.poi_results['source_branch'].unique()
-                if len(unique_branches) > 1:
-                    st.markdown("### Branch Color Legend")
-                    branch_colors = generate_branch_colors(unique_branches)
+                if 'Manual Search' in unique_branches:
+                    unique_branches = unique_branches[unique_branches != 'Manual Search']
+                
+                if len(unique_branches) > 0:
+                    # Get colors for branches
+                    branch_colors, radius_colors = generate_branch_colors(unique_branches)
                     
-                    # Create legend HTML
-                    legend_html = '<div class="color-legend">'
-                    for branch in unique_branches:
-                        color = branch_colors.get(branch, [128, 128, 128, 200])
-                        color_hex = f'rgb({color[0]}, {color[1]}, {color[2]})'
-                        legend_html += f'''
-                        <div class="legend-item">
-                            <div class="legend-color" style="background-color: {color_hex};"></div>
-                            <span class="legend-text">{branch}</span>
-                        </div>
-                        '''
-                    legend_html += '</div>'
+                    # Create legend
+                    legend_html = create_branch_color_legend(unique_branches, branch_colors, radius_colors)
                     st.markdown(legend_html, unsafe_allow_html=True)
             
             # POI Map with radius circles
-            st.markdown("###  POI Distribution Map (with 3km radius)")
+            st.markdown("###  POI Distribution Map")
             selected_branches_data = get_selected_branches_data(
                 selected_poi_branches if not manual_search else []
             )
