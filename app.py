@@ -526,24 +526,19 @@ def clean_poi_data(df: pd.DataFrame) -> pd.DataFrame:
         df_clean['types'] = df_clean['types'].apply(parse_types)
     
     return df_clean
-
 def create_poi_analysis_chart(poi_data: pd.DataFrame):
-    """Create analysis charts with transparent backgrounds for the new UI."""
+    """Create analysis charts with high-contrast text for white backgrounds."""
     if poi_data.empty:
-        st.info("No data available for analysis.")
         return
     
     col1, col2 = st.columns(2)
+    TEXT_COLOR = "#03045e"  # Dark navy for high contrast
     
     with col1:
-        # POI type distribution
         if 'types' in poi_data.columns:
             all_types = []
             for type_list in poi_data['types'].dropna():
-                if isinstance(type_list, list):
-                    all_types.extend(type_list)
-                else:
-                    all_types.append(str(type_list))
+                all_types.extend(type_list if isinstance(type_list, list) else [str(type_list)])
             
             if all_types:
                 from collections import Counter
@@ -553,23 +548,23 @@ def create_poi_analysis_chart(poi_data: pd.DataFrame):
                 fig1 = px.pie(
                     values=list(top_types.values()),
                     names=list(top_types.keys()),
-                    title="Top 10 POI Types",
-                    hole=0.4
+                    title="<b>Top 10 POI Types</b>",
+                    hole=0.4,
+                    template='plotly_white' # Forces white-base theme
                 )
                 
-                # Apply the transparent styling
                 fig1.update_layout(
                     paper_bgcolor='rgba(0,0,0,0)',
                     plot_bgcolor='rgba(0,0,0,0)',
-                    font=dict(color="#111184"),
-                    margin=dict(t=40, b=0, l=0, r=0)
+                    font=dict(color=TEXT_COLOR, size=12),
+                    title_font=dict(color=TEXT_COLOR, size=16),
+                    showlegend=True,
+                    legend=dict(font=dict(color=TEXT_COLOR))
                 )
                 st.plotly_chart(fig1, use_container_width=True)
 
     with col2:
-        # Rating distribution
         if 'rating' in poi_data.columns:
-            # Clean data to ensure it's numeric for the histogram
             plot_df = poi_data.dropna(subset=['rating']).copy()
             plot_df['rating'] = pd.to_numeric(plot_df['rating'], errors='coerce')
             
@@ -578,18 +573,27 @@ def create_poi_analysis_chart(poi_data: pd.DataFrame):
                     plot_df,
                     x='rating',
                     nbins=10,
-                    title="Rating Distribution",
-                    color_discrete_sequence=['#00b4d8']
+                    title="<b>Rating Distribution</b>",
+                    template='plotly_white'
                 )
                 
-                # Apply the transparent styling
                 fig2.update_layout(
                     paper_bgcolor='rgba(0,0,0,0)',
                     plot_bgcolor='rgba(0,0,0,0)',
-                    font=dict(color="#03045e"),
-                    xaxis=dict(title="Star Rating", gridcolor='rgba(0,0,0,0.1)'),
-                    yaxis=dict(title="Count", gridcolor='rgba(0,0,0,0.1)'),
-                    margin=dict(t=40, b=0, l=0, r=0)
+                    font=dict(color=TEXT_COLOR),
+                    title_font=dict(color=TEXT_COLOR, size=16),
+                    xaxis=dict(
+                        title="Star Rating", 
+                        title_font=dict(color=TEXT_COLOR),
+                        tickfont=dict(color=TEXT_COLOR),
+                        gridcolor='#eeeeee'
+                    ),
+                    yaxis=dict(
+                        title="Count", 
+                        title_font=dict(color=TEXT_COLOR),
+                        tickfont=dict(color=TEXT_COLOR),
+                        gridcolor='#eeeeee'
+                    )
                 )
                 st.plotly_chart(fig2, use_container_width=True)
 # ====================
@@ -651,6 +655,12 @@ def inject_modern_ui():
         padding: 8px 14px !important;
         font-weight: 500 !important;
         transition: 0.3s ease !important;
+    }
+    .stPlotlyChart {
+        background-color: #FFFFFF !important;
+        border-radius: 15px !important;
+        padding: 10px !important;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1) !important;
     }
     /* 1. POI Results Section Background */
     [data-testid="stExpander"], .poi-card {
