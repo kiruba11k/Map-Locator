@@ -620,7 +620,30 @@ def inject_modern_ui():
     .block-container {
         padding: 24px 40px;
     }
+    /* BUTTONS - This makes Download buttons match Copy to Clipboard */
+    .stButton>button, .stDownloadButton>button {
+        background-color: white !important;
+        color: #03045e !important;
+        border: 1px solid #dee2e6 !important;
+        border-radius: 12px !important;
+        padding: 8px 14px !important;
+        font-weight: 500 !important;
+        transition: 0.3s ease !important;
+    }
 
+    .stButton>button:hover, .stDownloadButton>button:hover {
+        border-color: #0096c7 !important;
+        color: #0096c7 !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1) !important;
+    }
+
+    /* Keep the SEARCH button as the main blue action button */
+    .stButton button[kind="primary"] {
+        background: linear-gradient(135deg, #03045e, #0096c7) !important;
+        color: white !important;
+        border: none !important;
+    }
     /* SIDEBAR */
     [data-testid="stSidebar"] {
         background: linear-gradient(180deg, var(--deep-twilight), var(--bright-teal-blue));
