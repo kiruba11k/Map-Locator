@@ -556,6 +556,18 @@ def create_poi_analysis_chart(poi_data: pd.DataFrame):
                 names=list(top_types.keys()),
                 title="Top 10 POI Types"
             )
+            # Add this layout update to fig1 and fig2 inside create_poi_analysis_chart
+            fig1.update_layout(
+            paper_bgcolor='rgba(0,0,0,0)',
+        plot_bgcolor='rgba(0,0,0,0)',
+        font=dict(color="#03045e")
+        )
+    
+            fig2.update_layout(
+        paper_bgcolor='rgba(0,0,0,0)',
+        plot_bgcolor='rgba(0,0,0,0)',
+        font=dict(color="#03045e")
+        )
             st.plotly_chart(fig1, use_container_width=True)
     
     with col2:
@@ -568,6 +580,18 @@ def create_poi_analysis_chart(poi_data: pd.DataFrame):
                 nbins=20,
                 title="Rating Distribution"
             )
+            # Add this layout update to fig1 and fig2 inside create_poi_analysis_chart
+            fig1.update_layout(
+        paper_bgcolor='rgba(0,0,0,0)',
+        plot_bgcolor='rgba(0,0,0,0)',
+        font=dict(color="#03045e")
+    )
+    
+            fig2.update_layout(
+        paper_bgcolor='rgba(0,0,0,0)',
+        plot_bgcolor='rgba(0,0,0,0)',
+        font=dict(color="#03045e")
+    )
             st.plotly_chart(fig2, use_container_width=True)
 
 # ====================
@@ -629,6 +653,55 @@ def inject_modern_ui():
         padding: 8px 14px !important;
         font-weight: 500 !important;
         transition: 0.3s ease !important;
+    }
+    /* 1. POI Results Section Background */
+    [data-testid="stExpander"], .poi-card {
+        background: rgba(255, 255, 255, 0.7) !important;
+        backdrop-filter: blur(10px);
+        border-radius: 15px !important;
+        border: 1px solid rgba(72, 202, 228, 0.3) !important;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05) !important;
+        margin-bottom: 10px;
+    }
+
+    /* 2. Style for Charts and Table Containers */
+    .stPlotlyChart, .stDataFrameWrapper {
+        background: white !important;
+        padding: 15px;
+        border-radius: 20px !important;
+        box-shadow: 0 8px 32px rgba(3, 4, 94, 0.1) !important;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    /* 3. Search History Table specifically */
+    [data-testid="stTable"] {
+        background: white;
+        border-radius: 15px;
+        overflow: hidden;
+    }
+
+    /* 4. Metric Card update (ensure they look consistent) */
+    .metric-card {
+        padding: 22px;
+        border-radius: 18px;
+        background: linear-gradient(135deg, #0077b6, #48cae4); /* Bright Teal to Sky Aqua */
+        color: white !important;
+        text-align: center;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        border: none;
+    }
+    
+    .metric-value {
+        font-size: 2.2rem !important;
+        font-weight: 700 !important;
+        color: white !important;
+    }
+    
+    .metric-label {
+        font-size: 1rem !important;
+        font-weight: 500 !important;
+        text-transform: uppercase;
+        letter-spacing: 1px;
     }
 
     .stButton>button:hover, .stDownloadButton>button:hover {
@@ -1072,26 +1145,27 @@ def main():
     with tab2:
         if not st.session_state.poi_results.empty:
             # Results summary
-            col1, col2, col3 = st.columns(3)
-            with col1:
-                st.metric("Total POIs Found", len(st.session_state.poi_results))
-            with col2:
-                if 'types' in st.session_state.poi_results.columns:
-                    all_types = []
-                    for type_list in st.session_state.poi_results['types'].dropna():
-                        if isinstance(type_list, list):
-                            all_types.extend(type_list)
-                        else:
-                            all_types.append(str(type_list))
-                    unique_types = len(set(all_types))
-                else:
-                    unique_types = 0
-                
-                st.metric("Unique Types", unique_types)
-            with col3:
-                if 'rating' in st.session_state.poi_results.columns:
-                    avg_rating = st.session_state.poi_results['rating'].mean()
-                    st.metric("Avg Rating", f"{avg_rating:.1f}/5")
+        col1, col2, col3 = st.columns(3)
+    
+    # Calculate values
+        total_pois = len(st.session_state.poi_results)
+    
+        if 'types' in st.session_state.poi_results.columns:
+            all_types = []
+            for type_list in st.session_state.poi_results['types'].dropna():
+                all_types.extend(type_list if isinstance(type_list, list) else [str(type_list)])
+            unique_types = len(set(all_types))
+        else:
+            unique_types = 0
+        
+        avg_rating = st.session_state.poi_results['rating'].mean() if 'rating' in st.session_state.poi_results.columns else 0
+
+        with col1:
+            st.markdown(f'<div class="metric-card"><div class="metric-label">Total POIs Found</div><div class="metric-value">{total_pois}</div></div>', unsafe_allow_html=True)
+        with col2:
+            st.markdown(f'<div class="metric-card"><div class="metric-label">Unique Types</div><div class="metric-value">{unique_types}</div></div>', unsafe_allow_html=True)
+        with col3:
+            st.markdown(f'<div class="metric-card"><div class="metric-label">Avg Rating</div><div class="metric-value">{avg_rating:.1f}/5</div></div>', unsafe_allow_html=True)
             
             # Show branch color legend if we have multiple branches
             if 'source_branch' in st.session_state.poi_results.columns:
