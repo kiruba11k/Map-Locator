@@ -402,18 +402,22 @@ def create_poi_map(branch_data: pd.DataFrame, poi_data: pd.DataFrame, radius_km:
             get_line_width=1, pickable=False
         ))
 
-    # 2. Branch Icons (Using IconLayer instead of Scatterplot)
+    
     if not branch_data.empty:
         branch_df = branch_data.copy()
+        
+        # Ensure we have the RGB arrays from your branch_colors mapping
         branch_df['color'] = branch_df['Branch'].map(branch_colors)
         
-        # Define the icon data (Location Pin)
+        # We use a white/transparent PNG so that 'get_color' can tint it correctly
         ICON_URL = "https://img.icons8.com/ios-filled/100/ffffff/marker.png"
+        
         icon_data = {
             "url": ICON_URL,
-            "width": 100,
-            "height": 100,
-            "anchorY": 100
+            "width": 128,
+            "height": 128,
+            "anchorY": 128, # Ensures the tip of the pin is on the coordinate
+            "mask": True    # Critical: Tells pydeck to tint the icon using get_color
         }
         branch_df['icon_data'] = [icon_data] * len(branch_df)
 
@@ -422,11 +426,10 @@ def create_poi_map(branch_data: pd.DataFrame, poi_data: pd.DataFrame, radius_km:
             data=branch_df,
             get_icon="icon_data",
             get_position=['Longitude', 'Latitude'],
-            get_size=40,
-            get_color='color', # Applies branch color to the white icon
-            pickable=False,    # REMOVES TOOLKIT/TOOLTIP FOR BRANCHES
-        ))
-    
+            get_size=45,
+            get_color='color',  # Matches the [R, G, B, A] from your branch_colors
+            pickable=False      # Keeps the focus on POI tooltips
+        ))    
     # 3. POI Layer (Dots with tooltips)
     if not poi_data.empty:
         poi_df = poi_data.copy()
