@@ -1145,27 +1145,27 @@ def main():
     with tab2:
         if not st.session_state.poi_results.empty:
             # Results summary
-        col1, col2, col3 = st.columns(3)
+            col1, col2, col3 = st.columns(3)
     
     # Calculate values
-        total_pois = len(st.session_state.poi_results)
+            total_pois = len(st.session_state.poi_results)
     
-        if 'types' in st.session_state.poi_results.columns:
-            all_types = []
-            for type_list in st.session_state.poi_results['types'].dropna():
-                all_types.extend(type_list if isinstance(type_list, list) else [str(type_list)])
-            unique_types = len(set(all_types))
-        else:
-            unique_types = 0
+            if 'types' in st.session_state.poi_results.columns:
+                all_types = []
+                for type_list in st.session_state.poi_results['types'].dropna():
+                    all_types.extend(type_list if isinstance(type_list, list) else [str(type_list)])
+                unique_types = len(set(all_types))
+            else:
+                unique_types = 0
         
-        avg_rating = st.session_state.poi_results['rating'].mean() if 'rating' in st.session_state.poi_results.columns else 0
+            avg_rating = st.session_state.poi_results['rating'].mean() if 'rating' in st.session_state.poi_results.columns else 0
 
-        with col1:
-            st.markdown(f'<div class="metric-card"><div class="metric-label">Total POIs Found</div><div class="metric-value">{total_pois}</div></div>', unsafe_allow_html=True)
-        with col2:
-            st.markdown(f'<div class="metric-card"><div class="metric-label">Unique Types</div><div class="metric-value">{unique_types}</div></div>', unsafe_allow_html=True)
-        with col3:
-            st.markdown(f'<div class="metric-card"><div class="metric-label">Avg Rating</div><div class="metric-value">{avg_rating:.1f}/5</div></div>', unsafe_allow_html=True)
+            with col1:
+                st.markdown(f'<div class="metric-card"><div class="metric-label">Total POIs Found</div><div class="metric-value">{total_pois}</div></div>', unsafe_allow_html=True)
+            with col2:
+                st.markdown(f'<div class="metric-card"><div class="metric-label">Unique Types</div><div class="metric-value">{unique_types}</div></div>', unsafe_allow_html=True)
+            with col3:
+                st.markdown(f'<div class="metric-card"><div class="metric-label">Avg Rating</div><div class="metric-value">{avg_rating:.1f}/5</div></div>', unsafe_allow_html=True)
             
             # Show branch color legend if we have multiple branches
             if 'source_branch' in st.session_state.poi_results.columns:
