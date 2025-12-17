@@ -245,7 +245,7 @@ def create_branch_network_map(branch_data: pd.DataFrame, selected_branch: Option
     # Generate unique colors for each branch
     branch_colors, radius_colors = generate_branch_colors(branch_data['Branch'].tolist())
     
-    # Add branch radius circles (3km) with light colors
+    # Add branch radius circles (3km) with light colors - NO TOOLTIP
     radius_layer_data = []
     for _, branch in branch_data.iterrows():
         radius_color = radius_colors.get(branch['Branch'], [128, 128, 128, 40])
@@ -258,35 +258,29 @@ def create_branch_network_map(branch_data: pd.DataFrame, selected_branch: Option
         
         radius_layer_data.append({
             'polygon': circle_polygon,
-            'branch': branch['Branch'],
-            'ifsc': branch['IFSC_Code'],
-            'address': branch['Address'],
-            'city': branch['City'],
-            'pincode': branch['Pincode'],
-            'radius_km': radius_km
+            'color': radius_color
         })
     
-    # Create PolygonLayer for radius circles - use simpler approach
+    # Create PolygonLayer for radius circles - WITHOUT TOOLTIPS
     if radius_layer_data:
-        # Create a separate layer for each branch's radius to handle tooltips better
-        for radius_data in radius_layer_data:
-            radius_layer = pdk.Layer(
-                "PolygonLayer",
-                data=[radius_data],
-                stroked=True,
-                filled=True,
-                extruded=False,
-                get_polygon="polygon",
-                get_fill_color=radius_colors.get(radius_data['branch'], [128, 128, 128, 40]),
-                get_line_color=[0, 0, 0, 80],
-                get_line_width=2,
-                pickable=True,
-            )
-            layers.append(radius_layer)
+        radius_layer = pdk.Layer(
+            "PolygonLayer",
+            radius_layer_data,
+            stroked=True,
+            filled=True,
+            extruded=False,
+            get_polygon="polygon",
+            get_fill_color="color",
+            get_line_color=[0, 0, 0, 60],
+            get_line_width=1,
+            pickable=False,  # NO TOOLTIP FOR RADIUS
+        )
+        layers.append(radius_layer)
     
-    # Branch layer with unique colors
+    # Branch layer with unique colors - WITH TOOLTIP
     branch_data_with_colors = branch_data.copy()
     branch_data_with_colors['color'] = branch_data_with_colors['Branch'].map(branch_colors)
+    branch_data_with_colors['radius_km'] = radius_km  # Add radius info for tooltip
     
     # Adjust size for selected branch
     if selected_branch != "All Branches":
@@ -307,8 +301,8 @@ def create_branch_network_map(branch_data: pd.DataFrame, selected_branch: Option
         line_width_min_pixels=2,
         pickable=True,
         auto_highlight=True,
-        radius_min_pixels=10,
-        radius_max_pixels=30,
+        radius_min_pixels=12,
+        radius_max_pixels=35,
     )
     layers.append(branch_layer)
     
@@ -332,35 +326,31 @@ def create_branch_network_map(branch_data: pd.DataFrame, selected_branch: Option
         pitch=pitch
     )
     
-    # Create tooltip - SIMPLIFIED VERSION that works with pydeck
+    # Create tooltip ONLY for branches
     tooltip = {
         "html": """
         <div style="
             background: white;
             color: black;
-            padding: 10px;
-            border-radius: 5px;
-            box-shadow: 0px 0px 10px rgba(0,0,0,0.2);
+            padding: 12px;
+            border-radius: 6px;
+            box-shadow: 0px 2px 10px rgba(0,0,0,0.2);
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            font-size: 12px;
+            font-size: 13px;
             max-width: 300px;
+            border-left: 4px solid #1a73e8;
         ">
-            <div style="font-weight: bold; color: #1a73e8; margin-bottom: 5px;">
-                🏦 SBI Branch: {Branch}
+            <div style="font-weight: bold; color: #1a73e8; margin-bottom: 8px; font-size: 14px;">
+                🏦 {Branch}
             </div>
-            <div><strong>IFSC:</strong> {IFSC_Code}</div>
-            <div><strong>Address:</strong> {Address}</div>
-            <div><strong>City:</strong> {City}</div>
-            <div><strong>Pincode:</strong> {Pincode}</div>
-            <div style="margin-top: 8px; font-style: italic; color: #666;">
-                {radius_km}km radius coverage area shown
+            <div style="margin-bottom: 4px;"><strong>IFSC:</strong> {IFSC_Code}</div>
+            <div style="margin-bottom: 4px;"><strong>Address:</strong> {Address}</div>
+            <div style="margin-bottom: 4px;"><strong>City:</strong> {City} - {Pincode}</div>
+            <div style="margin-top: 8px; padding: 6px; background-color: #f0f8ff; border-radius: 4px; font-size: 12px; color: #555;">
+                <strong>Coverage:</strong> {radius_km}km radius area shown
             </div>
         </div>
-        """,
-        "style": {
-            "backgroundColor": "white",
-            "color": "black"
-        }
+        """
     }
     
     # Map style mapping
@@ -385,7 +375,7 @@ def create_poi_map(branch_data: pd.DataFrame, poi_data: pd.DataFrame, radius_km:
     # Generate unique colors for each branch
     branch_colors, radius_colors = generate_branch_colors(branch_data['Branch'].tolist())
     
-    # Add branch radius circles (3km) with light colors
+    # Add branch radius circles (3km) with light colors - NO TOOLTIP
     radius_layer_data = []
     for _, branch in branch_data.iterrows():
         radius_color = radius_colors.get(branch['Branch'], [128, 128, 128, 40])
@@ -398,33 +388,26 @@ def create_poi_map(branch_data: pd.DataFrame, poi_data: pd.DataFrame, radius_km:
         
         radius_layer_data.append({
             'polygon': circle_polygon,
-            'branch': branch['Branch'],
-            'ifsc': branch['IFSC_Code'],
-            'address': branch['Address'],
-            'city': branch['City'],
-            'pincode': branch['Pincode'],
-            'radius_km': radius_km
+            'color': radius_color
         })
     
-    # Create PolygonLayer for radius circles - use simpler approach
+    # Create PolygonLayer for radius circles - WITHOUT TOOLTIPS
     if radius_layer_data:
-        # Create a separate layer for each branch's radius
-        for radius_data in radius_layer_data:
-            radius_layer = pdk.Layer(
-                "PolygonLayer",
-                data=[radius_data],
-                stroked=True,
-                filled=True,
-                extruded=False,
-                get_polygon="polygon",
-                get_fill_color=radius_colors.get(radius_data['branch'], [128, 128, 128, 40]),
-                get_line_color=[0, 0, 0, 80],
-                get_line_width=2,
-                pickable=True,
-            )
-            layers.append(radius_layer)
+        radius_layer = pdk.Layer(
+            "PolygonLayer",
+            radius_layer_data,
+            stroked=True,
+            filled=True,
+            extruded=False,
+            get_polygon="polygon",
+            get_fill_color="color",
+            get_line_color=[0, 0, 0, 60],
+            get_line_width=1,
+            pickable=False,  # NO TOOLTIP FOR RADIUS
+        )
+        layers.append(radius_layer)
     
-    # Branch layer with unique colors
+    # Branch layer with unique colors - WITH TOOLTIP
     branch_data_with_colors = branch_data.copy()
     branch_data_with_colors['color'] = branch_data_with_colors['Branch'].map(branch_colors)
     
@@ -444,7 +427,7 @@ def create_poi_map(branch_data: pd.DataFrame, poi_data: pd.DataFrame, radius_km:
     )
     layers.append(branch_layer)
     
-    # POI layer - color by source branch
+    # POI layer - color by source branch - WITH TOOLTIP
     if not poi_data.empty:
         poi_data = poi_data.copy()
         
@@ -477,6 +460,11 @@ def create_poi_map(branch_data: pd.DataFrame, poi_data: pd.DataFrame, radius_km:
         if 'source_branch' not in poi_data.columns:
             poi_data['source_branch'] = 'Unknown'
         
+        # Format rating for display
+        poi_data['rating_display'] = poi_data['rating'].apply(
+            lambda x: f"{x:.1f}" if isinstance(x, (int, float)) else str(x)
+        )
+        
         poi_layer = pdk.Layer(
             "ScatterplotLayer",
             data=poi_data,
@@ -488,8 +476,8 @@ def create_poi_map(branch_data: pd.DataFrame, poi_data: pd.DataFrame, radius_km:
             line_width_min_pixels=1,
             pickable=True,
             auto_highlight=True,
-            radius_min_pixels=5,
-            radius_max_pixels=15,
+            radius_min_pixels=6,
+            radius_max_pixels=18,
         )
         layers.append(poi_layer)
     
@@ -516,28 +504,25 @@ def create_poi_map(branch_data: pd.DataFrame, poi_data: pd.DataFrame, radius_km:
         <div style="
             background: white;
             color: black;
-            padding: 10px;
-            border-radius: 5px;
-            box-shadow: 0px 0px 10px rgba(0,0,0,0.2);
+            padding: 12px;
+            border-radius: 6px;
+            box-shadow: 0px 2px 10px rgba(0,0,0,0.2);
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            font-size: 12px;
+            font-size: 13px;
             max-width: 300px;
+            border-left: 4px solid #e91e63;
         ">
-            <div style="font-weight: bold; color: #e91e63; margin-bottom: 5px;">
+            <div style="font-weight: bold; color: #e91e63; margin-bottom: 8px; font-size: 14px;">
                 📍 {name}
             </div>
-            <div><strong>Address:</strong> {full_address}</div>
-            <div><strong>Rating:</strong> {rating}/5 ({review_count} reviews)</div>
-            <div><strong>Distance:</strong> {distance_km:.1f} km</div>
-            <div style="margin-top: 8px; padding: 3px 6px; background-color: #e3f2fd; border-radius: 3px; display: inline-block;">
+            <div style="margin-bottom: 4px;"><strong>Address:</strong> {full_address}</div>
+            <div style="margin-bottom: 4px;"><strong>Rating:</strong> {rating_display}/5 ({review_count} reviews)</div>
+            <div style="margin-bottom: 4px;"><strong>Distance:</strong> {distance_km:.1f} km</div>
+            <div style="margin-top: 8px; padding: 6px; background-color: #f0f8ff; border-radius: 4px; font-size: 12px; color: #555;">
                 <strong>Nearest Branch:</strong> {source_branch}
             </div>
         </div>
-        """,
-        "style": {
-            "backgroundColor": "white",
-            "color": "black"
-        }
+        """
     }
     
     return pdk.Deck(
@@ -917,8 +902,8 @@ def create_branch_color_legend(branches, branch_colors, radius_colors):
     
     legend_html += '''
         <div style="width: 100%; font-size: 0.8rem; color: #666; margin-top: 10px;">
-            <div>● Branch Marker & POIs (Solid Color)</div>
-            <div>■ 3km Radius Area (Light Transparent)</div>
+            <div>● Branch Marker & POIs (Solid Color) - Hover for details</div>
+            <div>■ 3km Radius Area (Light Transparent) - No hover effect</div>
         </div>
     </div>
     '''
@@ -1052,6 +1037,7 @@ def main():
         st.pydeck_chart(branch_map, use_container_width=True)
         
         # Note about tooltips
+        st.info("💡 **Tip**: Hover over the colored circles (branch markers) to see branch details. The light-colored areas show 3km radius coverage.")
         
         st.divider()
         st.markdown("###  Branch Details")
@@ -1148,6 +1134,7 @@ def main():
             st.pydeck_chart(poi_map, use_container_width=True)
             
             # Note about tooltips
+            st.info("💡 **Tip**: Hover over POIs (colored dots) to see details. POIs are colored to match their nearest branch.")
             
             # Results table
             st.markdown("###  POI Results Table")
