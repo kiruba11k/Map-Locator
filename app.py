@@ -646,6 +646,31 @@ def inject_modern_ui():
     .block-container {
         padding: 24px 40px;
     }
+    [data-testid="stDataFrame"] {
+        background-color: #FFFFFF !important;
+        padding: 10px !important;
+        border-radius: 15px !important;
+        border: 1px solid #dee2e6 !important;
+        box-shadow: 0 8px 16px rgba(0,0,0,0.1) !important;
+    }
+
+    /* 2. Force the text inside the table to be dark navy */
+    [data-testid="stDataFrame"] td, [data-testid="stDataFrame"] th {
+        color: #03045e !important;
+    }
+
+    /* 3. Style the table headers specifically */
+    [data-testid="stDataFrame"] th {
+        background-color: #f8f9fa !important;
+        font-weight: 700 !important;
+    }
+
+    /* 4. Background for the table tab area */
+    .stTable {
+        background-color: white !important;
+        border-radius: 15px;
+        padding: 10px;
+    }
     /* BUTTONS - This makes Download buttons match Copy to Clipboard */
     .stButton>button, .stDownloadButton>button {
         background-color: white !important;
