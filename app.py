@@ -19,7 +19,12 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded"
 )
-
+ICON_DATA = {
+    "url": "https://cdn-icons-png.flaticon.com/512/684/684908.png",  # Example: A bank icon
+    "width": 128,
+    "height": 128,
+    "anchorY": 128  # Anchor point at the bottom of the icon for proper positioning
+}
 # ====================
 # 2. CONSTANTS & CONFIG
 # ====================
@@ -280,7 +285,7 @@ def create_branch_network_map(branch_data: pd.DataFrame, selected_branch: Option
     # Branch layer with unique colors - WITH TOOLTIP
     branch_data_with_colors = branch_data.copy()
     branch_data_with_colors['color'] = branch_data_with_colors['Branch'].map(branch_colors)
-    branch_data_with_colors['radius_km'] = radius_km  # Add radius info for tooltip
+    branch_data_with_colors['icon_data'] = [ICON_DATA] * len(branch_data_with_colors)
     
     # Adjust size for selected branch
     if selected_branch != "All Branches":
@@ -291,13 +296,14 @@ def create_branch_network_map(branch_data: pd.DataFrame, selected_branch: Option
         branch_data_with_colors['size'] = 200
     
     branch_layer = pdk.Layer(
-        "ScatterplotLayer",
+        "IconLayer",
         data=branch_data_with_colors,
         get_position=['Longitude', 'Latitude'],
         get_radius='size',
         get_fill_color='color',
         get_line_color=[0, 0, 0, 200],
         get_line_width=50,
+        get_color='color',
         line_width_min_pixels=2,
         pickable=True,
         auto_highlight=True,
