@@ -166,14 +166,16 @@ def search_poi_apify(query: str, lat: float, lng: float, max_items: int = 50,
 
 def calculate_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
     """Calculate distance between two points in kilometers."""
+    from math import radians, sin, cos, sqrt, atan2
+    
     R = 6371  # Earth's radius in km
     
-    lat1, lon1, lat2, lon2 = map(math.radians, [lat1, lon1, lat2, lon2])
+    lat1, lon1, lat2, lon2 = map(radians, [lat1, lon1, lat2, lon2])
     dlat = lat2 - lat1
     dlon = lon2 - lon1
     
-    a = math.sin(dlat/2)**2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon/2)**2
-    c = 2 * math.atan2(math.sqrt(a), sqrt(1-a))
+    a = sin(dlat/2)**2 + cos(lat1) * cos(lat2) * sin(dlon/2)**2
+    c = 2 * atan2(sqrt(a), sqrt(1-a))
     
     return R * c
 
@@ -260,27 +262,27 @@ def create_branch_network_map(branch_data: pd.DataFrame, selected_branch: Option
             'ifsc': branch['IFSC_Code'],
             'address': branch['Address'],
             'city': branch['City'],
-            'pincode': branch['Pincode']
+            'pincode': branch['Pincode'],
+            'radius_km': radius_km
         })
     
-    # Create PolygonLayer for radius circles
+    # Create PolygonLayer for radius circles - use simpler approach
     if radius_layer_data:
-        radius_layer = pdk.Layer(
-            "PolygonLayer",
-            radius_layer_data,
-            id="radius-layer",
-            stroked=True,
-            filled=True,
-            extruded=False,
-            wireframe=True,
-            get_polygon="polygon",
-            get_fill_color=radius_colors.get(branch_data['Branch'].iloc[0], [128, 128, 128, 40]) if not branch_data.empty else [128, 128, 128, 40],
-            get_line_color=[0, 0, 0, 80],
-            get_line_width=2,
-            line_width_min_pixels=1,
-            pickable=True,
-        )
-        layers.append(radius_layer)
+        # Create a separate layer for each branch's radius to handle tooltips better
+        for radius_data in radius_layer_data:
+            radius_layer = pdk.Layer(
+                "PolygonLayer",
+                data=[radius_data],
+                stroked=True,
+                filled=True,
+                extruded=False,
+                get_polygon="polygon",
+                get_fill_color=radius_colors.get(radius_data['branch'], [128, 128, 128, 40]),
+                get_line_color=[0, 0, 0, 80],
+                get_line_width=2,
+                pickable=True,
+            )
+            layers.append(radius_layer)
     
     # Branch layer with unique colors
     branch_data_with_colors = branch_data.copy()
@@ -297,7 +299,6 @@ def create_branch_network_map(branch_data: pd.DataFrame, selected_branch: Option
     branch_layer = pdk.Layer(
         "ScatterplotLayer",
         data=branch_data_with_colors,
-        id="branch-layer",
         get_position=['Longitude', 'Latitude'],
         get_radius='size',
         get_fill_color='color',
@@ -331,7 +332,7 @@ def create_branch_network_map(branch_data: pd.DataFrame, selected_branch: Option
         pitch=pitch
     )
     
-    # Create tooltip - SIMPLIFIED VERSION without complex conditionals
+    # Create tooltip - SIMPLIFIED VERSION that works with pydeck
     tooltip = {
         "html": """
         <div style="
@@ -352,10 +353,14 @@ def create_branch_network_map(branch_data: pd.DataFrame, selected_branch: Option
             <div><strong>City:</strong> {City}</div>
             <div><strong>Pincode:</strong> {Pincode}</div>
             <div style="margin-top: 8px; font-style: italic; color: #666;">
-                3km radius coverage area shown
+                {radius_km}km radius coverage area shown
             </div>
         </div>
-        """
+        """,
+        "style": {
+            "backgroundColor": "white",
+            "color": "black"
+        }
     }
     
     # Map style mapping
@@ -397,27 +402,27 @@ def create_poi_map(branch_data: pd.DataFrame, poi_data: pd.DataFrame, radius_km:
             'ifsc': branch['IFSC_Code'],
             'address': branch['Address'],
             'city': branch['City'],
-            'pincode': branch['Pincode']
+            'pincode': branch['Pincode'],
+            'radius_km': radius_km
         })
     
-    # Create PolygonLayer for radius circles
+    # Create PolygonLayer for radius circles - use simpler approach
     if radius_layer_data:
-        radius_layer = pdk.Layer(
-            "PolygonLayer",
-            radius_layer_data,
-            id="radius-layer",
-            stroked=True,
-            filled=True,
-            extruded=False,
-            wireframe=True,
-            get_polygon="polygon",
-            get_fill_color=radius_colors.get(branch_data['Branch'].iloc[0], [128, 128, 128, 40]) if not branch_data.empty else [128, 128, 128, 40],
-            get_line_color=[0, 0, 0, 80],
-            get_line_width=2,
-            line_width_min_pixels=1,
-            pickable=True,
-        )
-        layers.append(radius_layer)
+        # Create a separate layer for each branch's radius
+        for radius_data in radius_layer_data:
+            radius_layer = pdk.Layer(
+                "PolygonLayer",
+                data=[radius_data],
+                stroked=True,
+                filled=True,
+                extruded=False,
+                get_polygon="polygon",
+                get_fill_color=radius_colors.get(radius_data['branch'], [128, 128, 128, 40]),
+                get_line_color=[0, 0, 0, 80],
+                get_line_width=2,
+                pickable=True,
+            )
+            layers.append(radius_layer)
     
     # Branch layer with unique colors
     branch_data_with_colors = branch_data.copy()
@@ -426,7 +431,6 @@ def create_poi_map(branch_data: pd.DataFrame, poi_data: pd.DataFrame, radius_km:
     branch_layer = pdk.Layer(
         "ScatterplotLayer",
         data=branch_data_with_colors,
-        id="branch-layer",
         get_position=['Longitude', 'Latitude'],
         get_radius=200,
         get_fill_color='color',
@@ -469,10 +473,13 @@ def create_poi_map(branch_data: pd.DataFrame, poi_data: pd.DataFrame, radius_km:
                 else:
                     poi_data[col] = 'N/A'
         
+        # Ensure source_branch exists
+        if 'source_branch' not in poi_data.columns:
+            poi_data['source_branch'] = 'Unknown'
+        
         poi_layer = pdk.Layer(
             "ScatterplotLayer",
             data=poi_data,
-            id="poi-layer",
             get_position=['longitude', 'latitude'],
             get_radius=100,
             get_fill_color='color',
@@ -503,7 +510,7 @@ def create_poi_map(branch_data: pd.DataFrame, poi_data: pd.DataFrame, radius_km:
         pitch=40
     )
     
-    # Create simplified tooltip without complex conditionals
+    # Create tooltip for POI layer
     tooltip = {
         "html": """
         <div style="
@@ -523,10 +530,14 @@ def create_poi_map(branch_data: pd.DataFrame, poi_data: pd.DataFrame, radius_km:
             <div><strong>Rating:</strong> {rating}/5 ({review_count} reviews)</div>
             <div><strong>Distance:</strong> {distance_km:.1f} km</div>
             <div style="margin-top: 8px; padding: 3px 6px; background-color: #e3f2fd; border-radius: 3px; display: inline-block;">
-                <strong>Branch:</strong> {source_branch}
+                <strong>Nearest Branch:</strong> {source_branch}
             </div>
         </div>
-        """
+        """,
+        "style": {
+            "backgroundColor": "white",
+            "color": "black"
+        }
     }
     
     return pdk.Deck(
@@ -1136,7 +1147,8 @@ def main():
             poi_map = create_poi_map(selected_branches_data, st.session_state.poi_results, poi_radius)
             st.pydeck_chart(poi_map, use_container_width=True)
             
-            # Note about tooltips            
+            # Note about tooltips
+            
             # Results table
             st.markdown("###  POI Results Table")
             
@@ -1144,7 +1156,7 @@ def main():
             col1, col2 = st.columns(2)
             with col1:
                 if 'rating' in st.session_state.poi_results.columns:
-                    min_rating = st.slider("Minimum Rating", 0.0, 5.0, 0.0, 0.1, key="min_rating")
+                    min_rating = st.slider("Minimum Rating", 0.0, 5.0, 0.0, 0.1, key="min_rating_poi")
                     filtered_results = st.session_state.poi_results[
                         st.session_state.poi_results['rating'] >= min_rating
                     ]
@@ -1153,7 +1165,7 @@ def main():
                     
             with col2:
                 if 'distance_km' in st.session_state.poi_results.columns:
-                    max_distance = st.slider("Max Distance (km)", 0.0, 20.0, 10.0, 0.1, key="max_distance")
+                    max_distance = st.slider("Max Distance (km)", 0.0, 20.0, 10.0, 0.1, key="max_distance_poi")
                     filtered_results = filtered_results[
                         filtered_results['distance_km'] <= max_distance
                     ]
@@ -1203,7 +1215,7 @@ def main():
                     )
             
             with col4:
-                if st.button(" Copy to Clipboard", key="copy_clipboard"):
+                if st.button(" Copy to Clipboard", key="copy_clipboard_poi"):
                     json_str = filtered_results.head(10).to_json(orient='records', indent=2)
                     st.code(json_str, language='json')
                     st.success("First 10 results copied to code block above")
