@@ -444,6 +444,46 @@ def create_poi_map(branch_data: pd.DataFrame, poi_data: pd.DataFrame, radius_km:
     # POI layer - color by source branch - WITH TOOLTIP
     if not poi_data.empty:
         poi_data = poi_data.copy()
+
+        required_cols = ['rating', 'review_count', 'distance_km', 'full_address', 'types', 'source_branch']
+        for col in required_cols:
+            if col not in poi_data.columns:
+                if col == 'review_count':
+                    poi_data[col] = 0
+                elif col == 'distance_km':
+                    poi_data[col] = 0.0
+                elif col == 'rating':
+                    poi_data[col] = None
+                else:
+                    poi_data[col] = 'Not available'
+
+        def format_rating(row):
+            if pd.isna(row['rating']) or row['rating'] is None:
+                return "Not rated"
+            try:
+                rating_val = float(row['rating'])
+                review_count = int(row.get('review_count', 0))
+                return f"{rating_val:.1f}/5 ({review_count} reviews)"
+            except:
+                return "Not rated"
+
+        def format_distance(row):
+            try:
+                dist_val = float(row['distance_km'])
+                if dist_val == 0:
+                    return "Distance not available"
+                return f"{dist_val:.1f} km"
+            except:
+                return "Distance not available"
+                
+        poi_data['rating_display'] = poi_data.apply(format_rating, axis=1)
+        poi_data['distance_display'] = poi_data.apply(format_distance, axis=1)
+        
+        # Format types column if it's a list
+        if 'types' in poi_data.columns:
+            poi_data['types'] = poi_data['types'].apply(
+                lambda x: ', '.join(x) if isinstance(x, list) else str(x)
+            )
         
         # Use branch color for POIs, or default color if no branch association
         def get_poi_color(row):
@@ -562,6 +602,33 @@ def clean_poi_data(df: pd.DataFrame) -> pd.DataFrame:
         return df
     
     df_clean = df.copy()
+    if 'rating' in df_clean.columns:
+        df_clean['rating'] = pd.to_numeric(df_clean['rating'], errors='coerce')
+    
+    # Ensure distance_km is numeric
+    if 'distance_km' in df_clean.columns:
+        df_clean['distance_km'] = pd.to_numeric(df_clean['distance_km'], errors='coerce')
+
+    if 'review_count' in df_clean.columns:
+        df_clean['review_count'] = pd.to_numeric(df_clean['review_count'], errors='coerce').fillna(0)
+    
+    # Convert any string representations of lists to actual lists for 'types'
+    if 'types' in df_clean.columns:
+        def parse_types(val):
+            if isinstance(val, list):
+                return val
+            elif isinstance(val, str):
+                try:
+                    import ast
+                    return ast.literal_eval(val)
+                except:
+                    return [val]
+            return []
+        
+        df_clean['types'] = df_clean['types'].apply(parse_types)
+    
+    return df_clean
+    
     if df.empty:
         return df
     
