@@ -381,15 +381,14 @@ def create_branch_network_map(branch_data: pd.DataFrame, selected_branch: Option
         map_style=MAP_STYLES.get(map_style, 'light'),
         tooltip=tooltip
     )
-
 def create_poi_map(branch_data: pd.DataFrame, poi_data: pd.DataFrame, radius_km: float = 3) -> pdk.Deck:
-    """Create map showing branches, POIs, and 3km radius circles with unique colors."""
+    """Create map with Branches as Icons and POIs as Dots. Tooltip only for POIs."""
     layers = []
     
-    # 1. Generate unique colors for each branch
+    # Generate colors
     branch_colors, radius_colors = generate_branch_colors(branch_data['Branch'].tolist())
     
-    # 2. Add branch radius circles
+    # 1. Radius Circles (Not pickable)
     radius_layer_data = []
     for _, branch in branch_data.iterrows():
         radius_color = radius_colors.get(branch['Branch'], [128, 128, 128, 40])
@@ -402,79 +401,77 @@ def create_poi_map(branch_data: pd.DataFrame, poi_data: pd.DataFrame, radius_km:
             get_polygon="polygon", get_fill_color="color", get_line_color=[0, 0, 0, 60],
             get_line_width=1, pickable=False
         ))
+
+    # 2. Branch Icons (Using IconLayer instead of Scatterplot)
+    if not branch_data.empty:
+        branch_df = branch_data.copy()
+        branch_df['color'] = branch_df['Branch'].map(branch_colors)
+        
+        # Define the icon data (Location Pin)
+        ICON_URL = "https://img.icons8.com/ios-filled/100/ffffff/marker.png"
+        icon_data = {
+            "url": ICON_URL,
+            "width": 100,
+            "height": 100,
+            "anchorY": 100
+        }
+        branch_df['icon_data'] = [icon_data] * len(branch_df)
+
+        layers.append(pdk.Layer(
+            "IconLayer",
+            data=branch_df,
+            get_icon="icon_data",
+            get_position=['Longitude', 'Latitude'],
+            get_size=40,
+            get_color='color', # Applies branch color to the white icon
+            pickable=False,    # REMOVES TOOLKIT/TOOLTIP FOR BRANCHES
+        ))
     
-    # 3. Branch Scatter Layer
-    branch_data_with_colors = branch_data.copy()
-    branch_data_with_colors['color'] = branch_data_with_colors['Branch'].map(branch_colors)
-    
-    layers.append(pdk.Layer(
-        "ScatterplotLayer", data=branch_data_with_colors,
-        get_position=['Longitude', 'Latitude'], get_radius=200, get_fill_color='color',
-        get_line_color=[0, 0, 0, 200], get_line_width=50, pickable=True,
-        auto_highlight=True, radius_min_pixels=10
-    ))
-    
-    # 4. POI Layer with Pre-Calculated Strings (Fixes the Jinja/Tooltip Bug)
+    # 3. POI Layer (Dots with tooltips)
     if not poi_data.empty:
         poi_df = poi_data.copy()
         
-        # Helper to format rating safely
-        def fmt_rating(r):
-            val = r.get('rating')
-            count = r.get('review_count', 0)
-            return f"{val}/5 ({int(count)} reviews)" if pd.notnull(val) and val != 'N/A' else "Not rated"
-
-        # Helper to format distance safely
-        def fmt_dist(r):
-            d = r.get('distance_km')
-            return f"{float(d):.1f} km" if pd.notnull(d) and d != 0 else "N/A"
-
-        poi_df['rating_display'] = poi_df.apply(fmt_rating, axis=1)
-        poi_df['distance_display'] = poi_df.apply(fmt_dist, axis=1)
+        # Formatting for tooltips
+        poi_df['rating_display'] = poi_df.apply(lambda r: f"{r.get('rating')}/5" if pd.notnull(r.get('rating')) else "Not rated", axis=1)
+        poi_df['distance_display'] = poi_df.apply(lambda r: f"{float(r.get('distance_km', 0)):.1f} km", axis=1)
         poi_df['types_display'] = poi_df['types'].apply(lambda x: ', '.join(x) if isinstance(x, list) else str(x))
         poi_df['color'] = poi_df['source_branch'].apply(lambda x: branch_colors.get(x, [128, 128, 128, 180]))
 
         layers.append(pdk.Layer(
-            "ScatterplotLayer", data=poi_df,
-            get_position=['longitude', 'latitude'], get_radius=100, get_fill_color='color',
-            get_line_color=[255, 255, 255, 200], pickable=True, auto_highlight=True,
+            "ScatterplotLayer",
+            data=poi_df,
+            get_position=['longitude', 'latitude'],
+            get_radius=100,
+            get_fill_color='color',
+            get_line_color=[255, 255, 255, 200],
+            pickable=True, # ONLY POIs HAVE TOOLTIPS
+            auto_highlight=True,
             radius_min_pixels=6
         ))
 
-    # 5. FIX: Ensure view_state is ALWAYS defined (Fixes the NameError)
+    # 4. View State
     if not branch_data.empty:
-        center_lat = branch_data['Latitude'].mean()
-        center_lon = branch_data['Longitude'].mean()
-        zoom_level = 12
-    elif not poi_data.empty:
-        center_lat = poi_data['latitude'].mean()
-        center_lon = poi_data['longitude'].mean()
-        zoom_level = 12
+        center_lat, center_lon = branch_data['Latitude'].mean(), branch_data['Longitude'].mean()
     else:
-        center_lat = 12.9716  # Default Bangalore
-        center_lon = 77.5946
-        zoom_level = 11
-
-    view_state = pdk.ViewState(
-        latitude=center_lat, longitude=center_lon,
-        zoom=zoom_level, pitch=40
-    )
+        center_lat, center_lon = 12.9716, 77.5946
+        
+    view_state = pdk.ViewState(latitude=center_lat, longitude=center_lon, zoom=12, pitch=40)
     
-    # 6. Clean Tooltip
+    # 5. Tooltip (Now only triggers for pickable layers, i.e., POIs)
     tooltip = {
         "html": """
-        <div style="background: white; color: black; padding: 10px; border-radius: 4px; border-left: 4px solid #e91e63;">
-            <b>📍 {name}</b><br/>
+        <div style="background: white; color: black; padding: 12px; border-radius: 6px; border-left: 4px solid #e91e63;">
+            <b style="color: #e91e63;">📍 {name}</b><br/>
             <b>Type:</b> {types_display}<br/>
             <b>Rating:</b> {rating_display}<br/>
             <b>Distance:</b> {distance_display}<br/>
-            <hr>
-            <b>Branch:</b> {source_branch}
+            <div style="margin-top:5px; font-size:11px; color:gray;">Near {source_branch}</div>
         </div>
         """
     }
     
     return pdk.Deck(layers=layers, initial_view_state=view_state, map_style='light', tooltip=tooltip)
+
 def clean_poi_data(df: pd.DataFrame) -> pd.DataFrame:
     """Clean and validate POI data from Apify API."""
     if df.empty:
