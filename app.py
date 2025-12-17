@@ -350,13 +350,12 @@ def create_branch_network_map(branch_data: pd.DataFrame, selected_branch: Option
             border-left: 4px solid #1a73e8;
         ">
             <div style="font-weight: bold; color: #1a73e8; margin-bottom: 8px; font-size: 14px;">
-                🏦 {Branch}
+                 {Branch}
             </div>
             <div style="margin-bottom: 4px;"><strong>IFSC:</strong> {IFSC_Code}</div>
             <div style="margin-bottom: 4px;"><strong>Address:</strong> {Address}</div>
             <div style="margin-bottom: 4px;"><strong>City:</strong> {City} - {Pincode}</div>
-            <div style="margin-top: 8px; padding: 6px; background-color: #f0f8ff; border-radius: 4px; font-size: 12px; color: #555;">
-                <strong>Coverage:</strong> {radius_km}km radius area shown
+            <div style="margin-top: 8px; padding: 6px; background-color: #f0f8ff; border-radius: 2px; font-size: 12px; color: #555;">
             </div>
         </div>
         """
@@ -901,16 +900,14 @@ def create_branch_color_legend(branches, branch_colors, radius_colors):
             radius_color = radius_colors.get(branch, [128, 128, 128, 40])
             radius_hex = f'rgb({radius_color[0]}, {radius_color[1]}, {radius_color[2]})'
             
-            legend_html += f'''
-            <div class="legend-item" style="border-left-color: {marker_hex};">
+            legend_html += f'''<div class="legend-item" style="border-left-color: {marker_hex};">
                 <div class="legend-color-circle" style="background-color: {marker_hex};"></div>
                 <div class="legend-color-square" style="background-color: {radius_hex};"></div>
                 <span class="legend-text">{branch}</span>
             </div>
             '''
     
-    legend_html += '''
-        <div style="width: 100%; font-size: 0.8rem; color: #666; margin-top: 10px;">
+    legend_html += '''<div style="width: 100%; font-size: 0.8rem; color: #666; margin-top: 10px;">
             <div>● Branch Marker & POIs (Solid Color) - Hover for details</div>
             <div>■ 3km Radius Area (Light Transparent) - No hover effect</div>
         </div>
@@ -1046,7 +1043,6 @@ def main():
         st.pydeck_chart(branch_map, use_container_width=True)
         
         # Note about tooltips
-        st.info("💡 **Tip**: Hover over the colored circles (branch markers) to see branch details. The light-colored areas show 3km radius coverage.")
         
         st.divider()
         st.markdown("###  Branch Details")
@@ -1143,7 +1139,6 @@ def main():
             st.pydeck_chart(poi_map, use_container_width=True)
             
             # Note about tooltips
-            st.info("💡 **Tip**: Hover over POIs (colored dots) to see details. POIs are colored to match their nearest branch.")
             
             # Results table
             st.markdown("###  POI Results Table")
