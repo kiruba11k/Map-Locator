@@ -40,56 +40,48 @@ POI_CATEGORIES = {
 # Generate distinct colors for branches
 def generate_branch_colors(branch_names):
     """Generate distinct colors for each branch."""
-    # Predefined distinct colors for branches (opaque for markers)
-    branch_colors = [
-        [255, 0, 0, 200],      # Red - PANATHUR
-        [0, 255, 0, 200],      # Green - BELLANDUR
-        [0, 0, 255, 200],      # Blue - BELLANDUR-OUTER
-        [255, 255, 0, 200],    # Yellow - DOMLUR
-        [255, 0, 255, 200],    # Magenta - BRIGADE METROPOLIS
-        [0, 255, 255, 200],    # Cyan
-        [255, 128, 0, 200],    # Orange
-        [128, 0, 255, 200],    # Purple
-        [0, 128, 255, 200],    # Light Blue
-        [255, 0, 128, 200],    # Pink
-    ]
+    # Predefined distinct colors for branches
+    branch_colors = {
+        "PANATHUR": [255, 0, 0, 200],      # Red
+        "BELLANDUR": [0, 255, 0, 200],     # Green
+        "BELLANDUR-OUTER": [0, 0, 255, 200],  # Blue
+        "DOMLUR": [255, 255, 0, 200],      # Yellow
+        "BRIGADE METROPOLIS": [255, 0, 255, 200],  # Magenta
+    }
     
     # Generate lighter transparent versions for radius circles
-    radius_colors = []
-    for color in branch_colors:
-        # Create a lighter, more transparent version for radius
-        radius_color = [
-            min(color[0] + 50, 255),
-            min(color[1] + 50, 255),
-            min(color[2] + 50, 255),
-            30  # More transparent
-        ]
-        radius_colors.append(radius_color)
+    radius_colors = {}
     
-    color_map = {}
-    radius_color_map = {}
+    for branch, color in branch_colors.items():
+        if branch in branch_names:
+            # Create a lighter, more transparent version for radius
+            radius_color = [
+                min(color[0] + 80, 255),
+                min(color[1] + 80, 255),
+                min(color[2] + 80, 255),
+                40  # Light and transparent
+            ]
+            radius_colors[branch] = radius_color
     
-    for i, branch in enumerate(branch_names):
-        if i < len(branch_colors):
-            color_map[branch] = branch_colors[i]
-            radius_color_map[branch] = radius_colors[i]
-        else:
-            # Generate random colors if we have more branches than predefined colors
+    # Add colors for any additional branches not in predefined list
+    for branch in branch_names:
+        if branch not in branch_colors:
+            # Generate random colors for additional branches
             import random
-            color_map[branch] = [
+            branch_colors[branch] = [
                 random.randint(50, 200),
                 random.randint(50, 200),
                 random.randint(50, 200),
                 200
             ]
-            radius_color_map[branch] = [
-                min(color_map[branch][0] + 50, 255),
-                min(color_map[branch][1] + 50, 255),
-                min(color_map[branch][2] + 50, 255),
-                30
+            radius_colors[branch] = [
+                min(branch_colors[branch][0] + 80, 255),
+                min(branch_colors[branch][1] + 80, 255),
+                min(branch_colors[branch][2] + 80, 255),
+                40
             ]
     
-    return color_map, radius_color_map
+    return branch_colors, radius_colors
 
 # ====================
 # 3. DATA FUNCTIONS
@@ -243,17 +235,18 @@ def search_multiple_branches_poi(selected_branches: List[str], query: str,
 # ====================
 # 5. VISUALIZATION FUNCTIONS
 # ====================
-def create_poi_map(branch_data: pd.DataFrame, poi_data: pd.DataFrame, radius_km: float = 3) -> pdk.Deck:
-    """Create map showing branches, POIs, and 3km radius circles with unique colors."""
+def create_branch_network_map(branch_data: pd.DataFrame, selected_branch: Optional[str], 
+                            pitch: int, zoom: int, map_style: str, radius_km: float = 3) -> pdk.Deck:
+    """Create map showing branches with 3km radius circles."""
     layers = []
     
     # Generate unique colors for each branch
     branch_colors, radius_colors = generate_branch_colors(branch_data['Branch'].tolist())
     
-    # Add branch radius circles (3km) with unique colors
+    # Add branch radius circles (3km) with light colors
     radius_layer_data = []
     for _, branch in branch_data.iterrows():
-        radius_color = radius_colors.get(branch['Branch'], [128, 128, 128, 30])
+        radius_color = radius_colors.get(branch['Branch'], [128, 128, 128, 40])
         # Create a circle polygon
         circle_polygon = generate_circle_polygon(
             branch['Latitude'], 
@@ -281,7 +274,152 @@ def create_poi_map(branch_data: pd.DataFrame, poi_data: pd.DataFrame, radius_km:
             wireframe=True,
             get_polygon="polygon",
             get_fill_color="color",
-            get_line_color=[0, 0, 0, 100],
+            get_line_color=[0, 0, 0, 80],
+            get_line_width=2,
+            line_width_min_pixels=1,
+            pickable=True,
+        )
+        layers.append(radius_layer)
+    
+    # Branch layer with unique colors
+    branch_data_with_colors = branch_data.copy()
+    branch_data_with_colors['color'] = branch_data_with_colors['Branch'].map(branch_colors)
+    
+    # Adjust size for selected branch
+    if selected_branch != "All Branches":
+        branch_data_with_colors['size'] = branch_data_with_colors['Branch'].apply(
+            lambda x: 300 if x == selected_branch else 200
+        )
+    else:
+        branch_data_with_colors['size'] = 200
+    
+    branch_layer = pdk.Layer(
+        "ScatterplotLayer",
+        data=branch_data_with_colors,
+        id="branch-layer",
+        get_position=['Longitude', 'Latitude'],
+        get_radius='size',
+        get_fill_color='color',
+        get_line_color=[0, 0, 0, 200],
+        get_line_width=50,
+        line_width_min_pixels=2,
+        pickable=True,
+        auto_highlight=True,
+        radius_min_pixels=10,
+        radius_max_pixels=30,
+    )
+    layers.append(branch_layer)
+    
+    # Calculate view state - center on selected branch if specified
+    if selected_branch != "All Branches":
+        selected_branch_data = branch_data[branch_data['Branch'] == selected_branch]
+        if not selected_branch_data.empty:
+            center_lat = selected_branch_data['Latitude'].iloc[0]
+            center_lon = selected_branch_data['Longitude'].iloc[0]
+        else:
+            center_lat = branch_data['Latitude'].mean()
+            center_lon = branch_data['Longitude'].mean()
+    else:
+        center_lat = branch_data['Latitude'].mean()
+        center_lon = branch_data['Longitude'].mean()
+    
+    view_state = pdk.ViewState(
+        latitude=center_lat,
+        longitude=center_lon,
+        zoom=zoom,
+        pitch=pitch
+    )
+    
+    # Create tooltip
+    tooltip = {
+        "html": """
+        <div style="
+            background: white;
+            color: black;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0px 0px 10px rgba(0,0,0,0.2);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 12px;
+            max-width: 300px;
+        ">
+            {% if layer.id == 'branch-layer' %}
+                <div style="font-weight: bold; color: #1a73e8; margin-bottom: 5px;">
+                    🏦 SBI Branch: {Branch}
+                </div>
+                <div><strong>IFSC:</strong> {IFSC_Code}</div>
+                <div><strong>Address:</strong> {Address}</div>
+                <div><strong>City:</strong> {City}</div>
+                <div><strong>Pincode:</strong> {Pincode}</div>
+                <div style="margin-top: 8px; font-style: italic; color: #666;">
+                    3km radius coverage area shown
+                </div>
+            {% elif layer.id == 'radius-layer' %}
+                <div style="font-weight: bold; color: #4caf50; margin-bottom: 5px;">
+                    ⭕ 3km Coverage Area
+                </div>
+                <div><strong>Branch:</strong> {branch}</div>
+                <div><strong>IFSC:</strong> {ifsc}</div>
+                <div><strong>Address:</strong> {address}</div>
+            {% endif %}
+        </div>
+        """
+    }
+    
+    # Map style mapping
+    MAP_STYLES = {
+        "Light": "light",
+        "Dark": "dark",
+        "Road": "mapbox://styles/mapbox/streets-v11",
+        "Satellite": "mapbox://styles/mapbox/satellite-streets-v11"
+    }
+    
+    return pdk.Deck(
+        layers=layers,
+        initial_view_state=view_state,
+        map_style=MAP_STYLES.get(map_style, 'light'),
+        tooltip=tooltip
+    )
+
+def create_poi_map(branch_data: pd.DataFrame, poi_data: pd.DataFrame, radius_km: float = 3) -> pdk.Deck:
+    """Create map showing branches, POIs, and 3km radius circles with unique colors."""
+    layers = []
+    
+    # Generate unique colors for each branch
+    branch_colors, radius_colors = generate_branch_colors(branch_data['Branch'].tolist())
+    
+    # Add branch radius circles (3km) with light colors
+    radius_layer_data = []
+    for _, branch in branch_data.iterrows():
+        radius_color = radius_colors.get(branch['Branch'], [128, 128, 128, 40])
+        # Create a circle polygon
+        circle_polygon = generate_circle_polygon(
+            branch['Latitude'], 
+            branch['Longitude'], 
+            radius_km
+        )
+        
+        radius_layer_data.append({
+            'polygon': circle_polygon,
+            'branch': branch['Branch'],
+            'ifsc': branch['IFSC_Code'],
+            'address': branch['Address'],
+            'color': radius_color
+        })
+    
+    # Create PolygonLayer for radius circles
+    if radius_layer_data:
+        radius_layer = pdk.Layer(
+            "PolygonLayer",
+            radius_layer_data,
+            id="radius-layer",
+            stroked=True,
+            filled=True,
+            extruded=False,
+            wireframe=True,
+            get_polygon="polygon",
+            get_fill_color="color",
+            get_line_color=[0, 0, 0, 80],
             get_line_width=2,
             line_width_min_pixels=1,
             pickable=True,
@@ -712,7 +850,7 @@ def inject_modern_ui():
         border-radius: 4px;
         border: 2px solid white;
         box-shadow: 0 0 3px rgba(0,0,0,0.3);
-        opacity: 0.3;
+        opacity: 0.4;
     }
     
     .legend-text {
@@ -731,62 +869,7 @@ def inject_modern_ui():
     """, unsafe_allow_html=True)
 
 # ====================
-# 8. MAP FUNCTIONS
-# ====================
-MAP_STYLES = {
-    "Light": "light",
-    "Dark": "dark",
-    "Road": "mapbox://styles/mapbox/streets-v11",
-    "Satellite": "mapbox://styles/mapbox/satellite-streets-v11"
-}
-
-def create_map(data: pd.DataFrame, selected_branch: Optional[str], pitch, zoom, style):
-    ICON_DATA = {
-        "url": "https://cdn-icons-png.flaticon.com/512/684/684908.png",
-        "width": 128, "height": 128, "anchorY": 128
-    }
-
-    df = data.copy()
-    df["icon_data"] = [ICON_DATA] * len(df)
-    df["icon_size"] = 1.2
-
-    if selected_branch != "All Branches":
-        df["icon_size"] = df.apply(
-            lambda r: 1.9 if r["Branch"] == selected_branch else 0.8, axis=1
-        )
-
-    layer = pdk.Layer(
-        "IconLayer",
-        data=df,
-        get_icon="icon_data",
-        get_size="icon_size",
-        size_scale=20,
-        get_position=["Longitude", "Latitude"],
-        pickable=True,
-        auto_highlight=True,
-    )
-
-    center_lat = df["Latitude"].mean()
-    center_lon = df["Longitude"].mean()
-
-    if selected_branch != "All Branches":
-        selected = df[df["Branch"] == selected_branch]
-        if not selected.empty:
-            center_lat = selected["Latitude"].iloc[0]
-            center_lon = selected["Longitude"].iloc[0]
-            zoom = 14
-
-    view = pdk.ViewState(latitude=center_lat, longitude=center_lon, zoom=zoom, pitch=pitch)
-
-    return pdk.Deck(
-        layers=[layer],
-        initial_view_state=view,
-        map_style=MAP_STYLES[style],
-        tooltip={"html": "<b>{Branch}</b><br>{Address}<br>IFSC: {IFSC_Code}"}
-    )
-
-# ====================
-# 9. METRIC CARDS
+# 8. METRIC CARDS
 # ====================
 def render_metrics(df):
     c1, c2, c3, c4 = st.columns(4)
@@ -833,7 +916,7 @@ def create_branch_color_legend(branches, branch_colors, radius_colors):
             marker_hex = f'rgb({marker_color[0]}, {marker_color[1]}, {marker_color[2]})'
             
             # Radius color (square with transparency)
-            radius_color = radius_colors.get(branch, [128, 128, 128, 30])
+            radius_color = radius_colors.get(branch, [128, 128, 128, 40])
             radius_hex = f'rgb({radius_color[0]}, {radius_color[1]}, {radius_color[2]})'
             
             legend_html += f'''
@@ -846,8 +929,8 @@ def create_branch_color_legend(branches, branch_colors, radius_colors):
     
     legend_html += '''
         <div style="width: 100%; font-size: 0.8rem; color: #666; margin-top: 10px;">
-            <div>● Branch Marker & POIs</div>
-            <div>■ 3km Radius Area</div>
+            <div>● Branch Marker & POIs (Solid Color)</div>
+            <div>■ 3km Radius Area (Light Transparent)</div>
         </div>
     </div>
     '''
@@ -855,7 +938,7 @@ def create_branch_color_legend(branches, branch_colors, radius_colors):
     return legend_html
 
 # ====================
-# 10. MAIN APPLICATION
+# 9. MAIN APPLICATION
 # ====================
 def main():
     # Inject CSS
@@ -880,15 +963,16 @@ def main():
     
     # Map controls
     st.sidebar.markdown("###  Map Controls")
-    map_view = st.sidebar.selectbox("Map Style", list(MAP_STYLES.keys()))
+    map_view = st.sidebar.selectbox("Map Style", ["Light", "Dark", "Road", "Satellite"])
     pitch = st.sidebar.slider("3D Tilt", 0, 60, 40)
     zoom = st.sidebar.slider("Zoom Level", 5, 20, 11)
     
+    # Radius control for Branch Network tab
+    st.sidebar.markdown("###  Radius Settings")
+    branch_radius = st.sidebar.slider("Branch Radius (km)", 1, 10, 3, key="branch_radius")
+    
     # POI Search in sidebar
     st.sidebar.markdown("###  POI Search")
-    
-    # Search radius
-    search_radius = st.sidebar.slider("Search Radius (km)", 1, 10, 3)
     
     # Quick search category
     quick_search = st.sidebar.selectbox(
@@ -908,6 +992,8 @@ def main():
         default=["All Branches"]
     )
     
+    # POI search radius
+    poi_radius = st.sidebar.slider("POI Search Radius (km)", 1, 10, 3, key="poi_radius")
     max_results = st.sidebar.slider("Max Results per Branch", 10, 100, 30)
     
     # Manual coordinates search
@@ -959,11 +1045,23 @@ def main():
         render_metrics(data)
         st.divider()
         
-        # Map
-        st.pydeck_chart(
-            create_map(data, selected_branch, pitch, zoom, map_view),
-            use_container_width=True
+        # Show branch color legend
+        branch_colors, radius_colors = generate_branch_colors(data['Branch'].tolist())
+        legend_html = create_branch_color_legend(data['Branch'].tolist(), branch_colors, radius_colors)
+        st.markdown(legend_html, unsafe_allow_html=True)
+        
+        st.markdown(f"###  Branch Network Map ({branch_radius}km Coverage)")
+        
+        # Map with radius circles
+        branch_map = create_branch_network_map(
+            data, 
+            selected_branch, 
+            pitch, 
+            zoom, 
+            map_view,
+            branch_radius
         )
+        st.pydeck_chart(branch_map, use_container_width=True)
         
         st.divider()
         st.markdown("###  Branch Details")
@@ -1008,7 +1106,7 @@ def main():
                     'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                     'query': search_query,
                     'branches': selected_poi_branches,
-                    'radius_km': search_radius,
+                    'radius_km': poi_radius,
                     'results': len(df_results) if not df_results.empty else 0
                 })
     
@@ -1052,11 +1150,11 @@ def main():
                     st.markdown(legend_html, unsafe_allow_html=True)
             
             # POI Map with radius circles
-            st.markdown("###  POI Distribution Map")
+            st.markdown(f"###  POI Distribution Map ({poi_radius}km Radius)")
             selected_branches_data = get_selected_branches_data(
                 selected_poi_branches if not manual_search else []
             )
-            poi_map = create_poi_map(selected_branches_data, st.session_state.poi_results, search_radius)
+            poi_map = create_poi_map(selected_branches_data, st.session_state.poi_results, poi_radius)
             st.pydeck_chart(poi_map, use_container_width=True)
             
             # Results table
@@ -1066,7 +1164,7 @@ def main():
             col1, col2 = st.columns(2)
             with col1:
                 if 'rating' in st.session_state.poi_results.columns:
-                    min_rating = st.slider("Minimum Rating", 0.0, 5.0, 0.0, 0.1)
+                    min_rating = st.slider("Minimum Rating", 0.0, 5.0, 0.0, 0.1, key="min_rating")
                     filtered_results = st.session_state.poi_results[
                         st.session_state.poi_results['rating'] >= min_rating
                     ]
@@ -1075,7 +1173,7 @@ def main():
                     
             with col2:
                 if 'distance_km' in st.session_state.poi_results.columns:
-                    max_distance = st.slider("Max Distance (km)", 0.0, 20.0, 10.0, 0.1)
+                    max_distance = st.slider("Max Distance (km)", 0.0, 20.0, 10.0, 0.1, key="max_distance")
                     filtered_results = filtered_results[
                         filtered_results['distance_km'] <= max_distance
                     ]
@@ -1125,7 +1223,7 @@ def main():
                     )
             
             with col4:
-                if st.button(" Copy to Clipboard"):
+                if st.button(" Copy to Clipboard", key="copy_clipboard"):
                     json_str = filtered_results.head(10).to_json(orient='records', indent=2)
                     st.code(json_str, language='json')
                     st.success("First 10 results copied to code block above")
