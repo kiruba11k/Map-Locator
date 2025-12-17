@@ -528,8 +528,9 @@ def clean_poi_data(df: pd.DataFrame) -> pd.DataFrame:
     return df_clean
 
 def create_poi_analysis_chart(poi_data: pd.DataFrame):
-    """Create analysis charts for POI data."""
+    """Create analysis charts with transparent backgrounds for the new UI."""
     if poi_data.empty:
+        st.info("No data available for analysis.")
         return
     
     col1, col2 = st.columns(2)
@@ -544,56 +545,53 @@ def create_poi_analysis_chart(poi_data: pd.DataFrame):
                 else:
                     all_types.append(str(type_list))
             
-            # Count frequency of each type
-            from collections import Counter
-            type_counts = Counter(all_types)
-            
-            # Get top 10 types
-            top_types = dict(type_counts.most_common(10))
-            
-            fig1 = px.pie(
-                values=list(top_types.values()),
-                names=list(top_types.keys()),
-                title="Top 10 POI Types"
-            )
-            # Add this layout update to fig1 and fig2 inside create_poi_analysis_chart
-            fig1.update_layout(
-            paper_bgcolor='rgba(0,0,0,0)',
-        plot_bgcolor='rgba(0,0,0,0)',
-        font=dict(color="#03045e")
-        )
-    
-            fig2.update_layout(
-        paper_bgcolor='rgba(0,0,0,0)',
-        plot_bgcolor='rgba(0,0,0,0)',
-        font=dict(color="#03045e")
-        )
-            st.plotly_chart(fig1, use_container_width=True)
-    
+            if all_types:
+                from collections import Counter
+                type_counts = Counter(all_types)
+                top_types = dict(type_counts.most_common(10))
+                
+                fig1 = px.pie(
+                    values=list(top_types.values()),
+                    names=list(top_types.keys()),
+                    title="Top 10 POI Types",
+                    hole=0.4
+                )
+                
+                # Apply the transparent styling
+                fig1.update_layout(
+                    paper_bgcolor='rgba(0,0,0,0)',
+                    plot_bgcolor='rgba(0,0,0,0)',
+                    font=dict(color="#03045e"),
+                    margin=dict(t=40, b=0, l=0, r=0)
+                )
+                st.plotly_chart(fig1, use_container_width=True)
+
     with col2:
         # Rating distribution
         if 'rating' in poi_data.columns:
-            poi_data['rating'] = pd.to_numeric(poi_data['rating'], errors='coerce')
-            fig2 = px.histogram(
-                poi_data.dropna(subset=['rating']),
-                x='rating',
-                nbins=20,
-                title="Rating Distribution"
-            )
-            # Add this layout update to fig1 and fig2 inside create_poi_analysis_chart
-            fig1.update_layout(
-        paper_bgcolor='rgba(0,0,0,0)',
-        plot_bgcolor='rgba(0,0,0,0)',
-        font=dict(color="#03045e")
-    )
-    
-            fig2.update_layout(
-        paper_bgcolor='rgba(0,0,0,0)',
-        plot_bgcolor='rgba(0,0,0,0)',
-        font=dict(color="#03045e")
-    )
-            st.plotly_chart(fig2, use_container_width=True)
-
+            # Clean data to ensure it's numeric for the histogram
+            plot_df = poi_data.dropna(subset=['rating']).copy()
+            plot_df['rating'] = pd.to_numeric(plot_df['rating'], errors='coerce')
+            
+            if not plot_df.empty:
+                fig2 = px.histogram(
+                    plot_df,
+                    x='rating',
+                    nbins=10,
+                    title="Rating Distribution",
+                    color_discrete_sequence=['#00b4d8']
+                )
+                
+                # Apply the transparent styling
+                fig2.update_layout(
+                    paper_bgcolor='rgba(0,0,0,0)',
+                    plot_bgcolor='rgba(0,0,0,0)',
+                    font=dict(color="#03045e"),
+                    xaxis=dict(title="Star Rating", gridcolor='rgba(0,0,0,0.1)'),
+                    yaxis=dict(title="Count", gridcolor='rgba(0,0,0,0.1)'),
+                    margin=dict(t=40, b=0, l=0, r=0)
+                )
+                st.plotly_chart(fig2, use_container_width=True)
 # ====================
 # 6. EXPORT FUNCTIONS
 # ====================
