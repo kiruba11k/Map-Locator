@@ -246,7 +246,13 @@ def create_branch_network_map(branch_data: pd.DataFrame, selected_branch: Option
                             pitch: int, zoom: int, map_style: str, radius_km: float = 3) -> pdk.Deck:
     """Create map showing branches with 3km radius circles."""
     layers = []
-    
+    if selected_branch != "All Branches":
+        branch_data = branch_data[branch_data['Branch'] == selected_branch].copy()
+    if branch_data.empty:
+        # Return a simple map centered on Bangalore if no data
+        view_state = pdk.ViewState(latitude=12.9716, longitude=77.5946, zoom=10, pitch=pitch)
+        return pdk.Deck(layers=[], initial_view_state=view_state, map_style='light')
+
     # Generate unique colors for each branch
     branch_colors, radius_colors = generate_branch_colors(branch_data['Branch'].tolist())
     
@@ -508,30 +514,40 @@ def create_poi_map(branch_data: pd.DataFrame, poi_data: pd.DataFrame, radius_km:
     
     # Create tooltip for POI layer
     tooltip = {
-        "html": """
-        <div style="
-            background: white;
-            color: black;
-            padding: 12px;
-            border-radius: 6px;
-            box-shadow: 0px 2px 10px rgba(0,0,0,0.2);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            font-size: 13px;
-            max-width: 300px;
-            border-left: 4px solid #e91e63;
-        ">
-            <div style="font-weight: bold; color: #e91e63; margin-bottom: 8px; font-size: 14px;">
-                📍 {name}
-            </div>
-            <div style="margin-bottom: 4px;"><strong>Address:</strong> {full_address}</div>
-            <div style="margin-bottom: 4px;"><strong>Rating:</strong> {rating_display}/5 ({review_count} reviews)</div>
-            <div style="margin-bottom: 4px;"><strong>Distance:</strong> {distance_km:.1f} km</div>
-            <div style="margin-top: 8px; padding: 6px; background-color: #f0f8ff; border-radius: 4px; font-size: 12px; color: #555;">
-                <strong>Nearest Branch:</strong> {source_branch}
-            </div>
+    "html": """
+    <div style="
+        background: white; color: black; padding: 12px; border-radius: 6px;
+        box-shadow: 0px 2px 10px rgba(0,0,0,0.2); font-family: 'Segoe UI', sans-serif;
+        font-size: 13px; max-width: 300px; border-left: 4px solid #e91e63;
+    ">
+        <div style="font-weight: bold; color: #e91e63; margin-bottom: 8px; font-size: 14px;">
+            📍 <b>{name}</b>
         </div>
-        """
-    }
+        <div style="margin-bottom: 4px;"><strong>Type:</strong> {types}</div>
+        <div style="margin-bottom: 4px;"><strong>Address:</strong> {full_address}</div>
+        <div style="margin-bottom: 4px;">
+            <strong>Rating:</strong> 
+            {% if rating !== 'N/A' && rating !== null %}
+                {rating}/5 ({review_count} reviews)
+            {% else %}
+                Not rated
+            {% endif %}
+        </div>
+        <div style="margin-bottom: 4px;">
+            <strong>Distance:</strong> 
+            {% if distance_km && distance_km !== 0 %}
+                {distance_km:.1f} km
+            {% else %}
+                Distance not available
+            {% endif %}
+        </div>
+        <div style="margin-top: 8px; padding: 6px; background-color: #f0f8ff; border-radius: 4px;">
+            <strong>Nearest Branch:</strong> {source_branch}
+        </div>
+    </div>
+    """
+}
+
     
     return pdk.Deck(
         layers=layers,
@@ -546,6 +562,28 @@ def clean_poi_data(df: pd.DataFrame) -> pd.DataFrame:
         return df
     
     df_clean = df.copy()
+    if df.empty:
+        return df
+    
+    df_clean = df.copy()
+    
+    # Ensure critical columns exist with safe defaults
+    required_columns = {
+        'source_branch': 'Unknown Branch',
+        'distance_km': 0.0,
+        'rating': 'N/A',
+        'review_count': 0,
+        'full_address': 'Address not available',
+        'name': 'Unnamed POI'
+    }
+    
+    for col, default_val in required_columns.items():
+        if col not in df_clean.columns:
+            df_clean[col] = default_val
+        else:
+            # Fill NaN values for existing columns
+            df_clean[col] = df_clean[col].fillna(default_val)
+
     
     # Ensure rating is numeric
     if 'rating' in df_clean.columns:
