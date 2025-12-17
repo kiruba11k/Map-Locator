@@ -642,16 +642,19 @@ def inject_modern_ui():
         background: var(--light-cyan);
         color: #012a4a;
     }
+    /* THE TABLES - FORCE WHITE BG */
+    [data-testid="stDataFrame"], .stDataFrameWrapper, [data-testid="stTable"] {
+        background-color: #FFFFFF !important;
+        border-radius: 15px !important;
+        border: 1px solid #dee2e6 !important;
+    }
+    
+    [data-testid="stDataFrame"] td, [data-testid="stDataFrame"] th, [data-testid="stDataFrame"] span {
+        color: #03045e !important;
+    }
 
     .block-container {
         padding: 24px 40px;
-    }
-    [data-testid="stDataFrame"] {
-        background-color: #FFFFFF !important;
-        padding: 10px !important;
-        border-radius: 15px !important;
-        border: 1px solid #dee2e6 !important;
-        box-shadow: 0 8px 16px rgba(0,0,0,0.1) !important;
     }
 
     /* 2. Force the text inside the table to be dark navy */
