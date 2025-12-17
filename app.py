@@ -242,94 +242,78 @@ def search_multiple_branches_poi(selected_branches: List[str], query: str,
 # ====================
 # 5. VISUALIZATION FUNCTIONS
 # ====================
+
+
 def create_branch_network_map(branch_data: pd.DataFrame, selected_branch: Optional[str], 
-                            pitch: int, zoom: int, map_style: str, radius_km: float = 3) -> pdk.Deck:
-    """Create map showing branches with 3km radius circles."""
+                             pitch: int, zoom: int, map_style: str, radius_km: float = 3) -> pdk.Deck:
+    """Create map showing branches as colored location icons with coverage circles."""
     layers = []
+    
     if selected_branch != "All Branches":
         branch_data = branch_data[branch_data['Branch'] == selected_branch].copy()
+    
     if branch_data.empty:
-        # Return a simple map centered on Bangalore if no data
         view_state = pdk.ViewState(latitude=12.9716, longitude=77.5946, zoom=10, pitch=pitch)
         return pdk.Deck(layers=[], initial_view_state=view_state, map_style='light')
 
     # Generate unique colors for each branch
     branch_colors, radius_colors = generate_branch_colors(branch_data['Branch'].tolist())
     
-    # Add branch radius circles (3km) with light colors - NO TOOLTIP
+    # 1. Radius Circles Layer (Coverage)
     radius_layer_data = []
     for _, branch in branch_data.iterrows():
         radius_color = radius_colors.get(branch['Branch'], [128, 128, 128, 40])
-        # Create a circle polygon
-        circle_polygon = generate_circle_polygon(
-            branch['Latitude'], 
-            branch['Longitude'], 
-            radius_km
-        )
-        
-        radius_layer_data.append({
-            'polygon': circle_polygon,
-            'color': radius_color
-        })
+        circle_polygon = generate_circle_polygon(branch['Latitude'], branch['Longitude'], radius_km)
+        radius_layer_data.append({'polygon': circle_polygon, 'color': radius_color})
     
-    # Create PolygonLayer for radius circles - WITHOUT TOOLTIPS
     if radius_layer_data:
-        radius_layer = pdk.Layer(
+        layers.append(pdk.Layer(
             "PolygonLayer",
             radius_layer_data,
             stroked=True,
             filled=True,
-            extruded=False,
             get_polygon="polygon",
             get_fill_color="color",
             get_line_color=[0, 0, 0, 60],
             get_line_width=1,
-            pickable=False,  # NO TOOLTIP FOR RADIUS
-        )
-        layers.append(radius_layer)
+            pickable=False, 
+        ))
+
+    # 2. Branch Icons Layer (Colored Map Pins)
+    branch_df = branch_data.copy()
+    branch_df['color'] = branch_df['Branch'].map(branch_colors)
     
-    branch_data_with_colors = branch_data.copy()
-    branch_data_with_colors['color'] = branch_data_with_colors['Branch'].map(branch_colors)
-    # Branch layer with unique colors - WITH TOOLTIP
-    # branch_data_with_colors = branch_data.copy()
-    # branch_data_with_colors['color'] = branch_data_with_colors['Branch'].map(branch_colors)
-    # branch_data_with_colors['icon_data'] = [ICON_DATA] * len(branch_data_with_colors)
+    # Define icon properties
+    # Using a white marker icon so it can be tinted via 'mask': True
+    ICON_URL = "https://img.icons8.com/ios-filled/100/ffffff/marker.png"
+    icon_data = {
+        "url": ICON_URL,
+        "width": 128,
+        "height": 128,
+        "anchorY": 128,
+        "mask": True
+    }
+    branch_df['icon_data'] = [icon_data] * len(branch_df)
     
-    
-    # Adjust size for selected branch
-    if selected_branch != "All Branches":
-        branch_data_with_colors['size'] = branch_data_with_colors['Branch'].apply(
-            lambda x: 300 if x == selected_branch else 200
-        )
-    else:
-        branch_data_with_colors['size'] = 200
-    
-    branch_layer = pdk.Layer(
-        "ScatterplotLayer",
-        data=branch_data_with_colors,
-        get_position=['Longitude', 'Latitude'],
-        get_radius='size',
-        get_fill_color='color',
-        get_line_color=[0, 0, 0, 200],
-        get_line_width=50,
-        get_color='color',
-        line_width_min_pixels=2,
-        pickable=True,
-        auto_highlight=True,
-        radius_min_pixels=12,
-        radius_max_pixels=35,
+    # Adjust size for selected branch to make it stand out
+    branch_df['icon_size'] = branch_df['Branch'].apply(
+        lambda x: 60 if x == selected_branch else 45
     )
-    layers.append(branch_layer)
+
+    layers.append(pdk.Layer(
+        "IconLayer",
+        data=branch_df,
+        get_icon="icon_data",
+        get_position=['Longitude', 'Latitude'],
+        get_size="icon_size",
+        get_color='color', # Applies branch-specific RGB color
+        pickable=True,     # Keep pickable so tooltip shows branch info
+    ))
     
-    # Calculate view state - center on selected branch if specified
-    if selected_branch != "All Branches":
-        selected_branch_data = branch_data[branch_data['Branch'] == selected_branch]
-        if not selected_branch_data.empty:
-            center_lat = selected_branch_data['Latitude'].iloc[0]
-            center_lon = selected_branch_data['Longitude'].iloc[0]
-        else:
-            center_lat = branch_data['Latitude'].mean()
-            center_lon = branch_data['Longitude'].mean()
+    # 3. View State Calculation
+    if selected_branch != "All Branches" and not branch_df.empty:
+        center_lat = branch_df['Latitude'].iloc[0]
+        center_lon = branch_df['Longitude'].iloc[0]
     else:
         center_lat = branch_data['Latitude'].mean()
         center_lon = branch_data['Longitude'].mean()
@@ -341,32 +325,18 @@ def create_branch_network_map(branch_data: pd.DataFrame, selected_branch: Option
         pitch=pitch
     )
     
-    # Create tooltip ONLY for branches
+    # 4. Tooltip (Shows branch details on hover)
     tooltip = {
         "html": """
-        <div style="
-            background: white;
-            color: black;
-            padding: 12px;
-            border-radius: 6px;
-            box-shadow: 0px 2px 10px rgba(0,0,0,0.2);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            font-size: 13px;
-            max-width: 300px;
-            border-left: 4px solid #1a73e8;
-        ">
-            <div style="font-weight: bold; color: #1a73e8; margin-bottom: 8px; font-size: 14px;">
-                 {Branch}
-            </div>
-            <div style="margin-bottom: 4px;"><strong>IFSC:</strong> {IFSC_Code}</div>
-            <div style="margin-bottom: 4px;"><strong>Address:</strong> {Address}</div>
-            <div style="margin-bottom: 4px;"><strong>City:</strong> {City} - {Pincode}</div>
-            <div style="margin-top: 8px; padding: 6px; background-color: #f0f8ff; border-radius: 2px; font-size: 12px; color: #555;">
-            </div>
+        <div style="background: white; color: black; padding: 12px; border-radius: 6px; border-left: 4px solid #1a73e8;">
+            <b style="color: #1a73e8; font-size: 14px;">{Branch}</b><br/>
+            <b>IFSC:</b> {IFSC_Code}<br/>
+            <b>Address:</b> {Address}<br/>
+            <b>Pincode:</b> {Pincode}
         </div>
         """
     }
-    
+
     # Map style mapping
     MAP_STYLES = {
         "Light": "light",
