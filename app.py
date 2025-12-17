@@ -383,142 +383,44 @@ def create_branch_network_map(branch_data: pd.DataFrame, selected_branch: Option
     )
 
 def create_poi_map(branch_data: pd.DataFrame, poi_data: pd.DataFrame, radius_km: float = 3) -> pdk.Deck:
-    """Create map showing branches, POIs, and 3km radius circles with unique colors."""
+    """Create map showing branches, POIs, and radius circles."""
     layers = []
-    
-    # Generate unique colors for each branch
     branch_colors, radius_colors = generate_branch_colors(branch_data['Branch'].tolist())
     
-    # Add branch radius circles (3km) with light colors - NO TOOLTIP
-    radius_layer_data = []
-    for _, branch in branch_data.iterrows():
-        radius_color = radius_colors.get(branch['Branch'], [128, 128, 128, 40])
-        # Create a circle polygon
-        circle_polygon = generate_circle_polygon(
-            branch['Latitude'], 
-            branch['Longitude'], 
-            radius_km
-        )
-        
-        radius_layer_data.append({
-            'polygon': circle_polygon,
-            'color': radius_color
-        })
-    
-    # Create PolygonLayer for radius circles - WITHOUT TOOLTIPS
-    if radius_layer_data:
-        radius_layer = pdk.Layer(
-            "PolygonLayer",
-            radius_layer_data,
-            stroked=True,
-            filled=True,
-            extruded=False,
-            get_polygon="polygon",
-            get_fill_color="color",
-            get_line_color=[0, 0, 0, 60],
-            get_line_width=1,
-            pickable=False,  # NO TOOLTIP FOR RADIUS
-        )
-        layers.append(radius_layer)
-    
-    # Branch layer with unique colors - WITH TOOLTIP
-    branch_data_with_colors = branch_data.copy()
-    branch_data_with_colors['color'] = branch_data_with_colors['Branch'].map(branch_colors)
-    
-    branch_layer = pdk.Layer(
-        "ScatterplotLayer",
-        data=branch_data_with_colors,
-        get_position=['Longitude', 'Latitude'],
-        get_radius=200,
-        get_fill_color='color',
-        get_line_color=[0, 0, 0, 200],
-        get_line_width=50,
-        line_width_min_pixels=2,
-        pickable=True,
-        auto_highlight=True,
-        radius_min_pixels=10,
-        radius_max_pixels=25,
-    )
-    layers.append(branch_layer)
-    
-    # POI layer - color by source branch - WITH TOOLTIP
+    # ... [Keep your radius_layer and branch_layer code here] ...
+
     if not poi_data.empty:
         poi_data = poi_data.copy()
 
-        required_cols = ['rating', 'review_count', 'distance_km', 'full_address', 'types', 'source_branch']
-        for col in required_cols:
-            if col not in poi_data.columns:
-                if col == 'review_count':
-                    poi_data[col] = 0
-                elif col == 'distance_km':
-                    poi_data[col] = 0.0
-                elif col == 'rating':
-                    poi_data[col] = None
-                else:
-                    poi_data[col] = 'Not available'
-
-        def format_rating(row):
-            if pd.isna(row['rating']) or row['rating'] is None:
+        # --- FIX STARTS HERE: PRE-PROCESS DISPLAY COLUMNS ---
+        def get_rating_str(row):
+            rating = row.get('rating')
+            count = row.get('review_count', 0)
+            if pd.isna(rating) or rating is None or rating == 'N/A':
                 return "Not rated"
-            try:
-                rating_val = float(row['rating'])
-                review_count = int(row.get('review_count', 0))
-                return f"{rating_val:.1f}/5 ({review_count} reviews)"
-            except:
-                return "Not rated"
+            return f"{rating}/5 ({int(count)} reviews)"
 
-        def format_distance(row):
-            try:
-                dist_val = float(row['distance_km'])
-                if dist_val == 0:
-                    return "Distance not available"
-                return f"{dist_val:.1f} km"
-            except:
+        def get_distance_str(row):
+            dist = row.get('distance_km')
+            if pd.isna(dist) or dist == 0:
                 return "Distance not available"
-                
-        poi_data['rating_display'] = poi_data.apply(format_rating, axis=1)
-        poi_data['distance_display'] = poi_data.apply(format_distance, axis=1)
+            return f"{dist:.1f} km"
+
+        # Create the display columns
+        poi_data['rating_display'] = poi_data.apply(get_rating_str, axis=1)
+        poi_data['distance_display'] = poi_data.apply(get_distance_str, axis=1)
         
-        # Format types column if it's a list
-        if 'types' in poi_data.columns:
-            poi_data['types'] = poi_data['types'].apply(
-                lambda x: ', '.join(x) if isinstance(x, list) else str(x)
-            )
-        
-        # Use branch color for POIs, or default color if no branch association
-        def get_poi_color(row):
-            if 'branch_color' in row and row['branch_color']:
-                return row['branch_color']
-            elif 'source_branch' in row and row['source_branch'] in branch_colors:
-                return branch_colors[row['source_branch']]
-            else:
-                # Default color for POIs without branch association
-                return [128, 128, 128, 180]
-        
-        # Apply color function
-        poi_data['color'] = poi_data.apply(get_poi_color, axis=1)
-        
-        # Ensure required columns exist for tooltip
-        for col in ['rating', 'review_count', 'distance_km', 'full_address']:
-            if col not in poi_data.columns:
-                if col == 'review_count':
-                    poi_data[col] = 0
-                elif col == 'distance_km':
-                    poi_data[col] = 0.0
-                elif col == 'rating':
-                    poi_data[col] = 'N/A'
-                else:
-                    poi_data[col] = 'N/A'
-        
-        # Ensure source_branch exists
-        if 'source_branch' not in poi_data.columns:
-            poi_data['source_branch'] = 'Unknown'
-        
-        # Format rating for display
-        poi_data['rating_display'] = poi_data['rating'].apply(
-            lambda x: f"{x:.1f}" if isinstance(x, (int, float)) else str(x)
+        # Ensure 'types' is a clean string
+        poi_data['types_display'] = poi_data['types'].apply(
+            lambda x: ', '.join(x) if isinstance(x, list) else str(x)
         )
         
+        # Color mapping logic
+        poi_data['color'] = poi_data.apply(
+            lambda row: branch_colors.get(row['source_branch'], [128, 128, 128, 180]), 
+            axis=1
+        )
+
         poi_layer = pdk.Layer(
             "ScatterplotLayer",
             data=poi_data,
@@ -527,75 +429,39 @@ def create_poi_map(branch_data: pd.DataFrame, poi_data: pd.DataFrame, radius_km:
             get_fill_color='color',
             get_line_color=[255, 255, 255, 200],
             get_line_width=20,
-            line_width_min_pixels=1,
             pickable=True,
             auto_highlight=True,
             radius_min_pixels=6,
             radius_max_pixels=18,
         )
         layers.append(poi_layer)
-    
-    # Calculate view state
-    if not branch_data.empty:
-        center_lat = branch_data['Latitude'].mean()
-        center_lon = branch_data['Longitude'].mean()
-        zoom = 11
-    else:
-        center_lat = 12.9716
-        center_lon = 77.5946
-        zoom = 10
-    
-    view_state = pdk.ViewState(
-        latitude=center_lat,
-        longitude=center_lon,
-        zoom=zoom,
-        pitch=40
-    )
-    
-    # Create tooltip for POI layer
-    tooltip = {
-    "html": """
-    <div style="
-        background: white; color: black; padding: 12px; border-radius: 6px;
-        box-shadow: 0px 2px 10px rgba(0,0,0,0.2); font-family: 'Segoe UI', sans-serif;
-        font-size: 13px; max-width: 300px; border-left: 4px solid #e91e63;
-    ">
-        <div style="font-weight: bold; color: #e91e63; margin-bottom: 8px; font-size: 14px;">
-            📍 <b>{name}</b>
-        </div>
-        <div style="margin-bottom: 4px;"><strong>Type:</strong> {types}</div>
-        <div style="margin-bottom: 4px;"><strong>Address:</strong> {full_address}</div>
-        <div style="margin-bottom: 4px;">
-            <strong>Rating:</strong> 
-            {% if rating !== 'N/A' && rating !== null %}
-                {rating}/5 ({review_count} reviews)
-            {% else %}
-                Not rated
-            {% endif %}
-        </div>
-        <div style="margin-bottom: 4px;">
-            <strong>Distance:</strong> 
-            {% if distance_km && distance_km !== 0 %}
-                {distance_km:.1f} km
-            {% else %}
-                Distance not available
-            {% endif %}
-        </div>
-        <div style="margin-top: 8px; padding: 6px; background-color: #f0f8ff; border-radius: 4px;">
-            <strong>Nearest Branch:</strong> {source_branch}
-        </div>
-    </div>
-    """
-}
 
-    
+    # ... [View state calculation] ...
+
+    # --- UPDATED TOOLTIP: CLEAN AND SIMPLE ---
+    tooltip = {
+        "html": """
+        <div style="background: white; color: black; padding: 12px; border-radius: 6px; 
+                    box-shadow: 0px 2px 10px rgba(0,0,0,0.2); font-family: sans-serif; 
+                    font-size: 13px; max-width: 300px; border-left: 4px solid #e91e63;">
+            <div style="font-weight: bold; color: #e91e63; margin-bottom: 8px;">📍 {name}</div>
+            <div><b>Type:</b> {types_display}</div>
+            <div><b>Address:</b> {full_address}</div>
+            <div><b>Rating:</b> {rating_display}</div>
+            <div><b>Distance:</b> {distance_display}</div>
+            <div style="margin-top: 8px; padding: 4px; background: #f0f8ff; border-radius: 4px;">
+                <b>Nearest Branch:</b> {source_branch}
+            </div>
+        </div>
+        """
+    }
+
     return pdk.Deck(
         layers=layers,
         initial_view_state=view_state,
         map_style='light',
         tooltip=tooltip
     )
-
 def clean_poi_data(df: pd.DataFrame) -> pd.DataFrame:
     """Clean and validate POI data from Apify API."""
     if df.empty:
