@@ -561,7 +561,7 @@ def create_poi_analysis_chart(poi_data: pd.DataFrame):
                 fig1.update_layout(
                     paper_bgcolor='rgba(0,0,0,0)',
                     plot_bgcolor='rgba(0,0,0,0)',
-                    font=dict(color="#03045e"),
+                    font=dict(color="#111184"),
                     margin=dict(t=40, b=0, l=0, r=0)
                 )
                 st.plotly_chart(fig1, use_container_width=True)
