@@ -939,36 +939,23 @@ def inject_modern_ui():
 # 8. METRIC CARDS
 # ====================
 def render_metrics(df):
-    c1, c2, c3, c4 = st.columns(4)
+    # Only keeping real dynamic metrics
+    c1, c2 = st.columns(2)
     with c1:
         st.markdown(f"""
         <div class="metric-card">
-            <div class="metric-label">Total Branches</div>
+            <div class="metric-label">Total Active Branches</div>
             <div class="metric-value">{len(df)}</div>
         </div>
         """, unsafe_allow_html=True)
     with c2:
         st.markdown(f"""
         <div class="metric-card">
-            <div class="metric-label">Cities Covered</div>
+            <div class="metric-label">Districts Covered</div>
             <div class="metric-value">{df['City'].nunique()}</div>
         </div>
         """, unsafe_allow_html=True)
-    with c3:
-        st.markdown(f"""
-        <div class="metric-card">
-            <div class="metric-label">Area Coverage</div>
-            <div class="metric-value">{(df['Latitude'].max() - df['Latitude'].min()):.2f}°</div>
-        </div>
-        """, unsafe_allow_html=True)
-    with c4:
-        st.markdown(f"""
-        <div class="metric-card">
-            <div class="metric-label">Last Updated</div>
-            <div class="metric-value">Now</div>
-        </div>
-        """, unsafe_allow_html=True)
-
+        
 def create_branch_color_legend(branches, branch_colors, radius_colors):
     """Create HTML for branch color legend."""
     legend_html = '''
