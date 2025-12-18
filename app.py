@@ -621,71 +621,320 @@ def export_data(df: pd.DataFrame, format: str = 'csv'):
 def inject_modern_ui():
     st.markdown("""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+    /* GOOGLE FONT — clean + visible */
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 
     :root {
-        --sbi-navy: #03045e;
-        --sbi-blue: #0077b6;
-        --bg-light: #caf0f8;
+        --deep-twilight: #03045e;
+        --french-blue: #023e8a;
+        --bright-teal-blue: #0077b6;
+        --blue-green: #0096c7;
+        --turquoise-surf: #00b4d8;
+        --sky-aqua: #48cae4;
+        --frosted-blue: #90e0ef;
+        --frosted-blue-2: #ade8f4;
+        --light-cyan: #caf0f8;
     }
 
-    /* GLOBAL RESET */
-    .stApp {
+    /* GLOBAL */
+    body, .stApp {
         font-family: 'Poppins', sans-serif;
-        background-color: #f8fbfd;
+        background: var(--light-cyan);
+        color: #012a4a;
     }
-
-    /* --- TABLES (DATAFRAME) FIX --- */
-    /* Force high contrast for the grid and cells */
-    [data-testid="stDataFrame"], [data-testid="stTable"] {
-        background-color: white !important;
-        padding: 10px;
-        border-radius: 12px;
-        border: 1px solid #e0e6ed;
+    /* THE TABLES - FORCE WHITE BG */
+    [data-testid="stDataFrame"], .stDataFrameWrapper, [data-testid="stTable"] {
+        background-color: #FFFFFF !important;
+        border-radius: 15px !important;
+        border: 1px solid #dee2e6 !important;
     }
     
-    /* Target the text inside Streamlit Dataframes */
-    [data-testid="stDataFrame"] div[role="gridcell"] > div {
-        color: var(--sbi-navy) !important;
+    [data-testid="stDataFrame"] td, [data-testid="stDataFrame"] th, [data-testid="stDataFrame"] span {
+        color: #03045e !important;
     }
 
-    /* --- METRIC CARDS --- */
-    .metric-container {
-        display: flex;
-        gap: 20px;
-        margin-bottom: 25px;
+    .block-container {
+        padding: 24px 40px;
     }
+
+    /* 2. Force the text inside the table to be dark navy */
+    [data-testid="stDataFrame"] td, [data-testid="stDataFrame"] th {
+        color: #03045e !important;
+    }
+
+    /* 3. Style the table headers specifically */
+    [data-testid="stDataFrame"] th {
+        background-color: #f8f9fa !important;
+        font-weight: 700 !important;
+    }
+
+    /* 4. Background for the table tab area */
+    .stTable {
+        background-color: white !important;
+        border-radius: 15px;
+        padding: 10px;
+    }
+    /* BUTTONS - This makes Download buttons match Copy to Clipboard */
+    .stButton>button, .stDownloadButton>button {
+        background-color: white !important;
+        color: #03045e !important;
+        border: 1px solid #dee2e6 !important;
+        border-radius: 12px !important;
+        padding: 8px 14px !important;
+        font-weight: 500 !important;
+        transition: 0.3s ease !important;
+    }
+    .stPlotlyChart {
+        background-color: #FFFFFF !important;
+        border-radius: 15px !important;
+        padding: 10px !important;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1) !important;
+    }
+    /* 1. POI Results Section Background */
+    [data-testid="stExpander"], .poi-card {
+        background: rgba(255, 255, 255, 0.7) !important;
+        backdrop-filter: blur(10px);
+        border-radius: 15px !important;
+        border: 1px solid rgba(72, 202, 228, 0.3) !important;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.05) !important;
+        margin-bottom: 10px;
+    }
+
+    /* 2. Style for Charts and Table Containers */
+    .stPlotlyChart, .stDataFrameWrapper {
+        background: white !important;
+        padding: 15px;
+        border-radius: 20px !important;
+        box-shadow: 0 8px 32px rgba(3, 4, 94, 0.1) !important;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    /* 3. Search History Table specifically */
+    [data-testid="stTable"] {
+        background: white;
+        border-radius: 15px;
+        overflow: hidden;
+    }
+
+    /* 4. Metric Card update (ensure they look consistent) */
     .metric-card {
-        flex: 1;
-        padding: 24px;
-        border-radius: 16px;
-        background: linear-gradient(135deg, var(--sbi-navy), var(--sbi-blue));
+        padding: 22px;
+        border-radius: 18px;
+        background: linear-gradient(135deg, #0077b6, #48cae4); /* Bright Teal to Sky Aqua */
         color: white !important;
         text-align: center;
-        box-shadow: 0 4px 15px rgba(3, 4, 94, 0.2);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        border: none;
     }
-    .metric-label { font-size: 0.9rem; opacity: 0.8; text-transform: uppercase; letter-spacing: 1px; }
-    .metric-value { font-size: 2.2rem; font-weight: 700; }
-
-    /* --- SIDEBAR --- */
-    [data-testid="stSidebar"] {
-        background: linear-gradient(180deg, var(--sbi-navy), #023e8a);
-    }
-    [data-testid="stSidebar"] * { color: white !important; }
     
+    .metric-value {
+        font-size: 2.2rem !important;
+        font-weight: 700 !important;
+        color: white !important;
+    }
+    
+    .metric-label {
+        font-size: 1rem !important;
+        font-weight: 500 !important;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .stButton>button:hover, .stDownloadButton>button:hover {
+        border-color: #0096c7 !important;
+        color: #0096c7 !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1) !important;
+    }
+
+    /* Keep the SEARCH button as the main blue action button */
+    .stButton button[kind="primary"] {
+        background: linear-gradient(135deg, #03045e, #0096c7) !important;
+        color: white !important;
+        border: none !important;
+    }
+    /* SIDEBAR */
+    [data-testid="stSidebar"] {
+        background: linear-gradient(180deg, var(--deep-twilight), var(--bright-teal-blue));
+        color: white;
+        padding: 22px;
+        border-radius: 0px 16px 16px 0;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    }
+
+    [data-testid="stSidebar"] h2 {
+        font-weight: 600;
+        margin-bottom: 18px;
+        color: white;
+    }
+
+    [data-testid="stSidebar"] h3 {
+        color: var(--light-cyan);
+        margin-top: 20px;
+        margin-bottom: 10px;
+    }
+
+    /* NAV HEADER */
+    .top-header {
+        padding: 20px 10px;
+        text-align: left;
+    }
+    .top-header h1 {
+        font-size: 2.6rem;
+        font-weight: 700;
+        background: linear-gradient(90deg, var(--deep-twilight), var(--blue-green));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 0;
+    }
+
+    /* METRIC CARDS */
+    .metric-card {
+        padding: 22px;
+        border-radius: 18px;
+        background: linear-gradient(135deg, var(--bright-teal-blue), var(--sky-aqua));
+        color: white;
+        text-align: center;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        transition: 0.4s ease;
+    }
+    .metric-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 15px 30px rgba(0,0,0,0.25);
+    }
+
+    .metric-label {
+        font-size: 1.1rem;
+        opacity: 0.9;
+    }
+    .metric-value {
+        font-size: 2rem;
+        font-weight: 700;
+    }
+
+    /* TABS */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 2px;
+        background-color: var(--light-cyan);
+    }
+
+    .stTabs [data-baseweb="tab"] {
+        padding: 12px 24px;
+        border-radius: 8px 8px 0 0;
+        background-color: var(--frosted-blue-2);
+        color: var(--deep-twilight);
+        font-weight: 600;
+    }
+
+    .stTabs [aria-selected="true"] {
+        background-color: var(--blue-green) !important;
+        color: white !important;
+    }
+
     /* BUTTONS */
     .stButton>button {
-        border-radius: 10px;
+        background: linear-gradient(135deg, var(--deep-twilight), var(--blue-green));
+        color: white;
+        border-radius: 12px;
+        padding: 8px 14px;
         font-weight: 600;
-        transition: 0.3s;
+        transition: 0.3s ease;
+        border: none;
+    }
+    .stButton>button:hover {
+        transform: scale(1.04);
+        box-shadow: 0 8px 18px rgba(0,0,0,0.25);
+    }
+
+    /* SEARCH RESULT CARDS */
+    .poi-card {
+        background: white;
+        border-radius: 12px;
+        padding: 16px;
+        margin: 10px 0;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        border-left: 4px solid var(--blue-green);
+    }
+
+    .poi-name {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--deep-twilight);
+        margin-bottom: 8px;
+    }
+
+    .poi-detail {
+        font-size: 0.9rem;
+        color: #666;
+        margin: 4px 0;
+    }
+
+    /* TABLE */
+    .stDataFrameWrapper {
+        border-radius: 18px;
+        overflow: hidden;
+        background: white;
+        box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+    }
+
+    .stDataFrame table {
+        font-size: 0.95rem;
     }
     
-    /* TABS */
-    .stTabs [data-baseweb="tab-list"] { background-color: transparent; }
-    .stTabs [data-baseweb="tab"] { font-weight: 600; color: var(--sbi-navy); }
-    .stTabs [aria-selected="true"] { color: var(--sbi-blue) !important; border-bottom-color: var(--sbi-blue) !important; }
+    /* Branch color legend */
+    .color-legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+        margin: 15px 0;
+        padding: 15px;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    
+    .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 5px 10px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        border-left: 4px solid;
+    }
+    
+    .legend-color-circle {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        border: 2px solid white;
+        box-shadow: 0 0 3px rgba(0,0,0,0.3);
+    }
+    
+    .legend-color-square {
+        width: 20px;
+        height: 20px;
+        border-radius: 4px;
+        border: 2px solid white;
+        box-shadow: 0 0 3px rgba(0,0,0,0.3);
+        opacity: 0.4;
+    }
+    
+    .legend-text {
+        font-size: 0.85rem;
+        font-weight: 500;
+    }
+    
+    .legend-title {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--deep-twilight);
+        margin-bottom: 10px;
+        width: 100%;
+    }
     </style>
     """, unsafe_allow_html=True)
+
 # ====================
 # 8. METRIC CARDS
 # ====================
