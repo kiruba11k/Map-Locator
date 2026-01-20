@@ -33,14 +33,36 @@ APIFY_TOKEN = st.secrets.get("TOKEN")  # Replace with your actual token
 
 # Common POI categories
 POI_CATEGORIES = {
-    "Education": ["college", "university", "school", "educational institute"],
-    "Business": ["tech park", "business park", "office", "corporate office", "startup"],
-    "Healthcare": ["hospital", "clinic", "medical center"],
-    "Retail": ["shopping mall", "market", "mall"],
-    "Food": ["restaurant", "cafe", "food court"],
-    "Government": ["government office", "municipal office"],
-    "Banking": ["bank", "atm", "financial institution"]
+    "Education": [
+        "college", "university", "school", "educational institute",
+        "kindergarten", "nursery school", "high school", "preschool"
+    ],
+    "Business": [
+        "tech park", "business park", "office", "corporate office", "startup",
+        "coworking space", "co-working space", "business center", "incubator"
+    ],
+    "Healthcare": [
+        "hospital", "clinic", "medical center",
+        "pharmacy", "dentist", "doctor", "nursing home", "healthcare"
+    ],
+    "Retail": [
+        "shopping mall", "market", "mall",
+        "supermarket", "grocery store", "department store", "hypermarket"
+    ],
+    "Food": [
+        "restaurant", "cafe", "food court",
+        "fast food restaurant", "bakery", "bar", "pub", "coffee shop"
+    ],
+    "Government": [
+        "government office", "municipal office",
+        "city hall", "courthouse", "post office", "police", "fire station"
+    ],
+    "Banking": [
+        "bank", "atm", "financial institution",
+        "state bank of india", "sbi branch", "credit union"
+    ]
 }
+
 
 # Generate distinct colors for branches
 def generate_branch_colors(branch_names):
@@ -52,6 +74,7 @@ def generate_branch_colors(branch_names):
         "BELLANDUR-OUTER": [0, 0, 255, 200],  # Blue
         "DOMLUR": [255, 255, 0, 200],      # Yellow
         "BRIGADE METROPOLIS": [255, 0, 255, 200],  # Magenta
+        "HOPE FARM Whitefiled":[255,3,120]
     }
     
     # Generate lighter transparent versions for radius circles
@@ -94,21 +117,22 @@ def generate_branch_colors(branch_names):
 @st.cache_data
 def load_branch_data() -> pd.DataFrame:
     return pd.DataFrame({
-        "Branch": ["PANATHUR", "BELLANDUR", "BELLANDUR-OUTER", "DOMLUR", "BRIGADE METROPOLIS"],
-        "IFSC_Code": ["SBIN0017040", "SBIN0015647", "SBIN0041171", "SBIN0016877", "SBIN0015034"],
+        "Branch": ["PANATHUR", "BELLANDUR", "BELLANDUR-OUTER", "DOMLUR", "BRIGADE METROPOLIS","HOPE FARM Whitefiled"],
+        "IFSC_Code": ["SBIN0017040", "SBIN0015647", "SBIN0041171", "SBIN0016877", "SBIN0015034","SBIN0018231"],
         "Address": [
             "Panathur Junction, Marathahalli",
             "Kaikondrahalli, Bellandur",
             "Outer Ring Road, Bellandur",
             "Complex, Domlur",
-            "Whitefield Road"
+            "Whitefield Road",
+            "Hope Farm Circle"
         ],
-        "City": ["BANGALORE"] * 5,
-        "State": ["KARNATAKA"] * 5,
-        "Pincode": ["560037", "560035", "560103", "560071", "560016"],
+        "City": ["BANGALORE"] * 6,
+        "State": ["KARNATAKA"] * 6,
+        "Pincode": ["560037", "560035", "560103", "560071", "560016","560066"],
         "Country": ["India"] * 5,
-        "Latitude": [12.9382107, 12.9188658, 12.9246927, 12.9534312, 12.9927608],
-        "Longitude": [77.6992385, 77.6700914, 77.672937, 77.6406167, 77.7021471],
+        "Latitude": [12.9382107, 12.9188658, 12.9246927, 12.9534312, 12.9927608,12.9859138],
+        "Longitude": [77.6992385, 77.6700914, 77.672937, 77.6406167, 77.7021471,7.7360819],
     })
 
 def get_selected_branches_data(selected_branches: List[str]) -> pd.DataFrame:
