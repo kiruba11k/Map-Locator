@@ -39,7 +39,14 @@ POI_CATEGORIES = {
     ],
     "Business": [
         "tech park", "business park", "office", "corporate office", "startup",
-        "coworking space", "co-working space", "business center", "incubator"
+        "coworking space", "co-working space", "business center", "incubator",   "business_center",
+    "tech_park",
+    "corporate_office",
+    "office_complex",
+    "coworking_space",
+    "software_company",
+    "office",
+    "it_park"
     ],
     "Healthcare": [
         "hospital", "clinic", "medical center",
