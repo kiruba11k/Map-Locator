@@ -38,15 +38,13 @@ POI_CATEGORIES = {
         "kindergarten", "nursery school", "high school", "preschool"
     ],
     "Business": [
-            "business_center",
-    "tech_park", 
-    "corporate_office",
-    "coworking_space",
-    "office_complex",
-    "software_company",
-    "point_of_interest"
-      
-    ],
+        "tech_park", "business_park", "corporate_office", "corporate_campus",
+        "coworking_space", "software_company", "manufacturer", "construction_company",
+        "interior_designer", "packaging_company", "mineral_water_company",
+        "poultry_farm", "safety_equipment_supplier", "print_shop",
+        "stationery_store", "self_storage_facility"
+    ]
+,
     "Healthcare": [
         "hospital", "clinic", "medical center",
         "pharmacy", "dentist", "doctor", "nursing home", "healthcare"
